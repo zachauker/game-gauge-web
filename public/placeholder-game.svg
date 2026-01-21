@@ -1,0 +1,8 @@
+<svg width="264" height="352" viewBox="0 0 264 352" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="264" height="352" fill="#1a1a1a"/>
+  <g opacity="0.3">
+    <path d="M132 120C145.255 120 156 109.255 156 96C156 82.7452 145.255 72 132 72C118.745 72 108 82.7452 108 96C108 109.255 118.745 120 132 120Z" stroke="#666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M180 232L132 184L84 232" stroke="#666666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="132" y="280" font-family="Arial, sans-serif" font-size="14" fill="#666666" text-anchor="middle">No Image Available</text>
+</svg>
