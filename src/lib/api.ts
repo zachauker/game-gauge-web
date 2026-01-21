@@ -124,6 +124,14 @@ export interface IGDBGame {
     name: string;
     abbreviation?: string;
   }>;
+  genres?: Array<{
+    name: string;
+  }>;
+  game_modes?: Array<{
+    name: string;
+  }>;
+  summary?: string;
+  storyline?: string;
   inDatabase?: boolean;
 }
 
