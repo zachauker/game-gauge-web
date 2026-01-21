@@ -9,13 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { RatingDialog } from "@/components/games/rating-dialog";
+import { RatingStats } from "@/components/games/rating-stats";
 import { 
   getIGDBGame, 
   getIGDBImageUrl, 
   formatIGDBDate,
   importGame 
 } from "@/lib/search";
-import { api, IGDBGame, getErrorMessage } from "@/lib/api";
+import { api, IGDBGame, getErrorMessage, RatingStats as RatingStatsType } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import {
   Star,
@@ -41,10 +43,23 @@ export default function GameDetailPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string>("");
   const [internalGameId, setInternalGameId] = useState<string | null>(null);
+  
+  // Rating state
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [ratingStats, setRatingStats] = useState<RatingStatsType | null>(null);
+  const [isLoadingRatings, setIsLoadingRatings] = useState(false);
 
   useEffect(() => {
     loadGameDetails();
   }, [igdbId]);
+
+  useEffect(() => {
+    // Load ratings when game is imported and we have internal ID
+    if (internalGameId && isAuthenticated) {
+      loadRatings();
+    }
+  }, [internalGameId, isAuthenticated]);
 
   const loadGameDetails = async () => {
     setIsLoading(true);
@@ -60,11 +75,8 @@ export default function GameDetailPage() {
 
       setGame(gameData);
       
-      // Check if game is already in our database
-      if (gameData.inDatabase) {
-        // TODO: Fetch internal game ID from backend
-        // For now, we'll set it based on IGDB ID
-      }
+      // Check if game exists in our database and get internal ID
+      await checkGameInDatabase();
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -72,22 +84,120 @@ export default function GameDetailPage() {
     }
   };
 
+  const checkGameInDatabase = async () => {
+    try {
+      // Search our database for game with this IGDB ID
+      // Use a large limit to get all games, or search by slug
+      const response = await api.get(`/games`, {
+        params: { limit: 100 }
+      });
+      
+      console.log('Checking for game with IGDB ID:', igdbId);
+      console.log('Total games in database:', response.data.data?.length || 0);
+      
+      const games = response.data.data || [];
+      
+      // Find game with matching IGDB ID
+      const matchingGame = games.find((g: any) => {
+        console.log('Game:', g.title, 'IGDB ID:', g.igdbId);
+        return g.igdbId === parseInt(igdbId);
+      });
+      
+      if (matchingGame) {
+        console.log('Found matching game:', matchingGame.title, 'UUID:', matchingGame.id);
+        setInternalGameId(matchingGame.id);
+        if (game) {
+          setGame({ ...game, inDatabase: true });
+        }
+      } else {
+        console.log('Game not found in database - needs to be imported');
+      }
+    } catch (err) {
+      console.error("Failed to check game in database:", err);
+    }
+  };
+
+  const loadRatings = async () => {
+    if (!internalGameId) {
+      console.log('No internal game ID - skipping rating load');
+      return;
+    }
+
+    // Don't try to load ratings if we have a temp ID
+    if (internalGameId.startsWith('temp-')) {
+        internalGameId.replace('temp-', '');
+      console.log('Temp ID detected - skipping rating load');
+      return;
+    }
+
+    console.log('Loading ratings for game UUID:', internalGameId);
+    setIsLoadingRatings(true);
+    
+    try {
+      // Get user's rating
+      const userRatingRes = await api.get(`/games/${internalGameId}/rating/me`);
+      if (userRatingRes.data.data) {
+        console.log('User rating found:', userRatingRes.data.data.score);
+        setUserRating(userRatingRes.data.data.score);
+      }
+
+      // Get rating stats
+      const statsRes = await api.get(`/games/${internalGameId}/rating/stats`);
+      console.log('Rating stats:', statsRes.data.data);
+      setRatingStats(statsRes.data.data);
+    } catch (err) {
+      // Silently fail - ratings might not exist yet
+      console.log('No ratings found yet (this is OK for new games)');
+    } finally {
+      setIsLoadingRatings(false);
+    }
+  };
+
   const handleImportGame = async () => {
     if (!game) return;
 
     setIsImporting(true);
+    setError("");
+    
     try {
+      console.log('Importing game from IGDB ID:', game.id);
       const importedGame = await importGame(game.id);
       
       if (importedGame) {
+        console.log('Game imported successfully! UUID:', importedGame.id);
         setInternalGameId(importedGame.id);
+        
         // Update game state to show it's now in database
         setGame({ ...game, inDatabase: true });
+        
+        // Load ratings for the newly imported game
+        if (isAuthenticated) {
+          console.log('Loading ratings for newly imported game...');
+          await loadRatings();
+        }
+      } else {
+        setError('Failed to import game');
       }
     } catch (err) {
-      setError(getErrorMessage(err));
+      const errorMsg = getErrorMessage(err);
+      console.error('Import failed:', errorMsg);
+      setError(errorMsg);
     } finally {
       setIsImporting(false);
+    }
+  };
+
+  const handleRateGame = async (rating: number) => {
+    if (!internalGameId) return;
+
+    try {
+      await api.post(`/games/${internalGameId}/rating`, { score: rating });
+      setUserRating(rating);
+      
+      // Reload rating stats
+      await loadRatings();
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
     }
   };
 
@@ -216,9 +326,13 @@ export default function GameDetailPage() {
                 </Button>
               ) : (
                 <>
-                  <Button size="lg" disabled={!isAuthenticated}>
+                  <Button
+                    size="lg"
+                    disabled={!isAuthenticated}
+                    onClick={() => setShowRatingDialog(true)}
+                  >
                     <Star className="mr-2 h-4 w-4" />
-                    Rate Game
+                    {userRating ? "Update Rating" : "Rate Game"}
                   </Button>
                   <Button variant="outline" size="lg" disabled={!isAuthenticated}>
                     <MessageSquare className="mr-2 h-4 w-4" />
@@ -333,22 +447,39 @@ export default function GameDetailPage() {
           </TabsContent>
 
           {/* Ratings & Reviews Tab */}
-          <TabsContent value="ratings">
+          <TabsContent value="ratings" className="space-y-6">
             {game.inDatabase ? (
-              <Card>
-                <CardContent className="py-12">
-                  <div className="text-center text-muted-foreground">
-                    <MessageSquare className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                    <p>Ratings and reviews will appear here</p>
-                    <p className="text-sm mt-2">Be the first to rate this game!</p>
+              <>
+                {isLoadingRatings ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                </CardContent>
-              </Card>
+                ) : ratingStats && ratingStats.totalRatings > 0 ? (
+                  <RatingStats stats={ratingStats} userRating={userRating || undefined} />
+                ) : (
+                  <Card>
+                    <CardContent className="py-12">
+                      <div className="text-center text-muted-foreground">
+                        <Star className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                        <p>No ratings yet</p>
+                        <p className="text-sm mt-2">Be the first to rate this game!</p>
+                        <Button
+                          className="mt-4"
+                          onClick={() => setShowRatingDialog(true)}
+                          disabled={!isAuthenticated}
+                        >
+                          Rate Game
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             ) : (
               <Card>
                 <CardContent className="py-12">
                   <div className="text-center text-muted-foreground">
-                    <p>Add this game to Game Gauge to see ratings and reviews</p>
+                    <p>Add this game to Game Gauge to see ratings</p>
                   </div>
                 </CardContent>
               </Card>
@@ -377,6 +508,17 @@ export default function GameDetailPage() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Rating Dialog */}
+        {game && (
+          <RatingDialog
+            open={showRatingDialog}
+            onOpenChange={setShowRatingDialog}
+            gameName={game.name}
+            currentRating={userRating || undefined}
+            onSubmit={handleRateGame}
+          />
+        )}
       </div>
     </MainLayout>
   );
