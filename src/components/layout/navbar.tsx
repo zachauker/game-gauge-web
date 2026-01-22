@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
@@ -33,6 +33,12 @@ export function Navbar() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch for theme toggle
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     clearAuth();
@@ -103,6 +109,12 @@ export function Navbar() {
                 >
                   Browse Games
                 </Link>
+                <Link
+                  href="/lists"
+                  className="text-sm font-medium transition-colors hover:text-primary"
+                >
+                  My Lists
+                </Link>
               </>
             )}
           </div>
@@ -110,19 +122,21 @@ export function Navbar() {
           {/* Right Side */}
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="hidden md:inline-flex"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-              <span className="sr-only">Toggle theme</span>
-            </Button>
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="hidden md:inline-flex"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            )}
 
             {/* Search Button (Desktop) */}
             <Link href="/search" className="hidden md:inline-flex">
@@ -307,6 +321,14 @@ export function Navbar() {
                   >
                     <Search className="h-4 w-4" />
                     <span>Browse Games</span>
+                  </Link>
+                  <Link
+                    href="/lists"
+                    className="flex items-center space-x-2 text-sm font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <List className="h-4 w-4" />
+                    <span>My Lists</span>
                   </Link>
                   <button
                     onClick={toggleTheme}

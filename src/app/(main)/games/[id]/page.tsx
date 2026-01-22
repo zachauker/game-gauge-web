@@ -125,7 +125,6 @@ export default function GameDetailPage() {
 
     // Don't try to load ratings if we have a temp ID
     if (internalGameId.startsWith('temp-')) {
-        internalGameId.replace('temp-', '');
       console.log('Temp ID detected - skipping rating load');
       return;
     }
