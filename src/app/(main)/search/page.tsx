@@ -148,9 +148,10 @@ export default function SearchPage() {
               </div>
             ) : searchResults.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {searchResults.map((game) => (
-                  <AutoImportGameCard key={game.id} game={game} />
-                ))}
+                {searchResults.map((game) => {
+                  console.log('Rendering game card for:', game.name, 'Using AutoImportGameCard');
+                  return <AutoImportGameCard key={game.id} game={game} />;
+                })}
               </div>
             ) : (
               <div className="text-center py-12">
@@ -194,9 +195,10 @@ export default function SearchPage() {
                 </div>
               ) : popularGames.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {popularGames.map((game) => (
-                    <AutoImportGameCard key={game.id} game={game} />
-                  ))}
+                  {popularGames.map((game) => {
+                    console.log('Rendering popular game card for:', game.name, 'Using AutoImportGameCard');
+                    return <AutoImportGameCard key={game.id} game={game} />;
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
@@ -229,9 +231,10 @@ export default function SearchPage() {
                 </div>
               ) : recentGames.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {recentGames.map((game) => (
-                    <AutoImportGameCard key={game.id} game={game} />
-                  ))}
+                  {recentGames.map((game) => {
+                    console.log('Rendering recent game card for:', game.name, 'Using AutoImportGameCard');
+                    return <AutoImportGameCard key={game.id} game={game} />;
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-12">
