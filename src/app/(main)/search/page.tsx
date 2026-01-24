@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GameCard } from "@/components/games/game-card";
+import { AutoImportGameCard } from "@/components/games/auto-import-game-card";
 import { searchIGDB, getPopularGames, getRecentGames } from "@/lib/search";
 import { IGDBGame } from "@/lib/api";
 import { Search, Loader2, TrendingUp, Clock } from "lucide-react";
@@ -148,7 +149,7 @@ export default function SearchPage() {
             ) : searchResults.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {searchResults.map((game) => (
-                  <GameCard key={game.id} game={game} />
+                  <AutoImportGameCard key={game.id} game={game} />
                 ))}
               </div>
             ) : (
@@ -194,7 +195,7 @@ export default function SearchPage() {
               ) : popularGames.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {popularGames.map((game) => (
-                    <GameCard key={game.id} game={game} />
+                    <AutoImportGameCard key={game.id} game={game} />
                   ))}
                 </div>
               ) : (
@@ -229,7 +230,7 @@ export default function SearchPage() {
               ) : recentGames.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {recentGames.map((game) => (
-                    <GameCard key={game.id} game={game} />
+                    <AutoImportGameCard key={game.id} game={game} />
                   ))}
                 </div>
               ) : (
