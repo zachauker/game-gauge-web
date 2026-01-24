@@ -339,11 +339,10 @@ export default function GameDetailPage() {
 
         {/* Rating Dialog */}
         <RatingDialog
-            gameName={game.title}
           open={showRatingDialog}
           onOpenChange={setShowRatingDialog}
           onSubmit={handleRatingSubmit}
-          currentRating={userRating || undefined}
+          initialRating={userRating || undefined}
         />
       </div>
     </MainLayout>

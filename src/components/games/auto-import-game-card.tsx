@@ -19,50 +19,58 @@ export function AutoImportGameCard({ game }: AutoImportGameCardProps) {
   const router = useRouter();
   const [isImporting, setIsImporting] = useState(false);
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  // Log when component mounts
+  console.log('AutoImportGameCard mounted for:', game.name);
 
-    // If already in database, navigate directly
-    if (game.inDatabase) {
-      // Need to get the actual UUID - for now navigate to IGDB ID page
-      // which will handle the lookup and redirect
-      router.push(`/games/igdb/${game.id}`);
+  const handleClick = async (e: React.MouseEvent) => {
+    console.log('AutoImportGameCard clicked for game:', game.name, 'IGDB ID:', game.id);
+    
+    // Prevent any default behavior
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Already importing, don't do it again
+    if (isImporting) {
+      console.log('Already importing, ignoring click');
       return;
     }
 
-    // Import the game first
     setIsImporting(true);
     
     try {
+      console.log('Calling POST /api/igdb/import with igdbId:', game.id);
+      
       const response = await api.post("/igdb/import", {
         igdbId: game.id,
       });
 
+      console.log('Import response:', response.data);
       const importedGame = response.data.data;
       
-      // Navigate to the imported game
+      console.log('Navigating to /games/' + importedGame.id);
+      
+      // Navigate to the imported game's detail page using our UUID
       router.push(`/games/${importedGame.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to import game:", error);
-      // Still try to navigate - the game detail page will handle it
-      router.push(`/games/igdb/${game.id}`);
-    } finally {
+      console.error("Error response:", error.response?.data);
       setIsImporting(false);
+      
+      const errorMessage = error.response?.data?.error?.message || error.message || "Unknown error";
+      alert(`Failed to load game: ${errorMessage}`);
     }
   };
 
   return (
     <div className="relative">
-      <div onClick={handleClick} className="cursor-pointer">
-        <GameCard game={game} />
-      </div>
+      <GameCard game={game} onClick={handleClick} />
       
       {/* Importing Overlay */}
       {isImporting && (
-        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-lg flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm rounded-lg flex items-center justify-center z-10 pointer-events-none">
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
-            <p className="text-sm font-medium">Importing game...</p>
+            <p className="text-sm font-medium">Loading game...</p>
           </div>
         </div>
       )}
