@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RatingDialog } from "@/components/games/rating-dialog";
 import { RatingStats } from "@/components/games/rating-stats";
+import { ReviewList } from "@/components/reviews/review-list";
 import { api, getErrorMessage, RatingStats as RatingStatsType } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import {
@@ -45,6 +47,7 @@ export default function GameDetailPage() {
   const [game, setGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const [activeTab, setActiveTab] = useState("overview");
   
   // Rating state
   const [showRatingDialog, setShowRatingDialog] = useState(false);
@@ -213,44 +216,63 @@ export default function GameDetailPage() {
 
             <Separator />
 
-            {/* Description */}
-            {game.description && (
-              <div>
-                <h2 className="text-2xl font-bold mb-4">About</h2>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {game.description}
-                </p>
-              </div>
-            )}
+            {/* Tabs for Overview and Reviews */}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="reviews">
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Reviews
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Game Details */}
-            <Card>
-              <CardContent className="pt-6">
-                <h3 className="text-lg font-semibold mb-4">Game Details</h3>
-                <div className="space-y-3">
-                  {game.developer && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Developer</span>
-                      <span className="font-medium">{game.developer}</span>
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6 mt-6">
+                {/* Description */}
+                {game.description && (
+                  <div>
+                    <h2 className="text-2xl font-bold mb-4">About</h2>
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {game.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Game Details */}
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Game Details</h3>
+                    <div className="space-y-3">
+                      {game.developer && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Developer</span>
+                          <span className="font-medium">{game.developer}</span>
+                        </div>
+                      )}
+                      {game.publisher && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Publisher</span>
+                          <span className="font-medium">{game.publisher}</span>
+                        </div>
+                      )}
+                      {game.releaseDate && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Release Date</span>
+                          <span className="font-medium">
+                            {new Date(game.releaseDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {game.publisher && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Publisher</span>
-                      <span className="font-medium">{game.publisher}</span>
-                    </div>
-                  )}
-                  {game.releaseDate && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Release Date</span>
-                      <span className="font-medium">
-                        {new Date(game.releaseDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Reviews Tab */}
+              <TabsContent value="reviews" className="mt-6">
+                <ReviewList gameId={game.id} />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Right Column - Cover & Actions */}
@@ -329,10 +351,14 @@ export default function GameDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Reviews Button */}
-            <Button variant="outline" className="w-full">
+            {/* Quick Reviews Button */}
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setActiveTab("reviews")}
+            >
               <MessageSquare className="mr-2 h-4 w-4" />
-              View Reviews
+              View All Reviews
             </Button>
           </div>
         </div>
