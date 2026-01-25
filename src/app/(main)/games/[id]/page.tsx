@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RatingDialog } from "@/components/games/rating-dialog";
 import { RatingStats } from "@/components/games/rating-stats";
 import { ReviewList } from "@/components/reviews/review-list";
+import { AddToListDialog } from "@/components/lists/add-to-list-dialog";
 import { api, getErrorMessage, RatingStats as RatingStatsType } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import {
@@ -21,6 +22,7 @@ import {
   Loader2,
   ChevronLeft,
   MessageSquare,
+  ListPlus,
 } from "lucide-react";
 
 interface Game {
@@ -54,6 +56,9 @@ export default function GameDetailPage() {
   const [userRating, setUserRating] = useState<number | null>(null);
   const [ratingStats, setRatingStats] = useState<RatingStatsType | null>(null);
   const [isLoadingRatings, setIsLoadingRatings] = useState(false);
+
+  // List state
+  const [showAddToListDialog, setShowAddToListDialog] = useState(false);
 
   useEffect(() => {
     loadGameDetails();
@@ -351,6 +356,18 @@ export default function GameDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Add to List Button */}
+            {isAuthenticated && (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => setShowAddToListDialog(true)}
+              >
+                <ListPlus className="mr-2 h-4 w-4" />
+                Add to List
+              </Button>
+            )}
+
             {/* Quick Reviews Button */}
             <Button 
               variant="outline" 
@@ -365,11 +382,22 @@ export default function GameDetailPage() {
 
         {/* Rating Dialog */}
         <RatingDialog
+            gameName={ game.title }
           open={showRatingDialog}
           onOpenChange={setShowRatingDialog}
           onSubmit={handleRatingSubmit}
-          initialRating={userRating || undefined}
+          currentRating={userRating || undefined}
         />
+
+        {/* Add to List Dialog */}
+        {game && (
+          <AddToListDialog
+            open={showAddToListDialog}
+            onOpenChange={setShowAddToListDialog}
+            gameId={game.id}
+            gameTitle={game.title}
+          />
+        )}
       </div>
     </MainLayout>
   );
