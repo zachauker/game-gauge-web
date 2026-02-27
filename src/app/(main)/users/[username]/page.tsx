@@ -202,7 +202,7 @@ export default function UserProfilePage() {
                         {isOwnProfile && (
                             <Button
                                 variant="outline"
-                                onClick={() => router.push("/settings/profile")}
+                                onClick={() => router.push("/settings")}
                             >
                                 <Settings className="mr-2 h-4 w-4"/>
                                 Edit Profile
