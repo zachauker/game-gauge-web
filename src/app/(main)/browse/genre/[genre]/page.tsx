@@ -142,7 +142,7 @@ export default function GenreBrowsePage() {
                 <Card
                   key={game.id}
                   className="cursor-pointer hover:shadow-lg transition-shadow group"
-                  onClick={() => router.push(`/games/${game.id}`)}
+                  onClick={() => router.push(`/games/${game.slug}`)}
                 >
                   <CardContent className="p-0">
                     {/* Cover Image */}

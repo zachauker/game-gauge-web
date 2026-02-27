@@ -322,7 +322,7 @@ export default function UserProfilePage() {
                   <Card
                     key={rating.id}
                     className="cursor-pointer hover:bg-accent transition-colors"
-                    onClick={() => router.push(`/games/${rating.game.id}`)}
+                    onClick={() => router.push(`/games/${rating.game.slug}`)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">

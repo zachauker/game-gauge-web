@@ -37,7 +37,7 @@ export default function IGDBGamePage() {
       const game = response.data.data;
 
       // Redirect to the proper game page with our UUID
-      router.replace(`/games/${game.id}`);
+      router.replace(`/games/${game.slug}`);
     } catch (err) {
       setError(getErrorMessage(err));
     }
