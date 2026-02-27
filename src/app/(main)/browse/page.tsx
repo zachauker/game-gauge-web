@@ -78,7 +78,7 @@ export default function BrowsePage() {
   const GameCard = ({ game }: { game: Game }) => (
     <Card
       className="cursor-pointer hover:shadow-lg transition-shadow group"
-      onClick={() => router.push(`/games/${game.id}`)}
+      onClick={() => router.push(`/games/${game.slug}`)}
     >
       <CardContent className="p-0">
         <div className="aspect-[3/4] relative overflow-hidden rounded-t-lg bg-muted">

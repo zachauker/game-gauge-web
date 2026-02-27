@@ -44,7 +44,7 @@ export default function GameDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
-  const gameId = params.id as string;
+  const slug = params.slug as string;
 
   const [game, setGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -62,7 +62,7 @@ export default function GameDetailPage() {
 
   useEffect(() => {
     loadGameDetails();
-  }, [gameId]);
+  }, [slug]);
 
   useEffect(() => {
     if (game && isAuthenticated) {
@@ -75,7 +75,7 @@ export default function GameDetailPage() {
     setError("");
 
     try {
-      const response = await api.get(`/games/${gameId}`);
+      const response = await api.get(`/games/slug/${slug}`);
       setGame(response.data.data);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -93,7 +93,7 @@ export default function GameDetailPage() {
       // Get user's rating if authenticated
       if (isAuthenticated) {
         try {
-          const userRatingRes = await api.get(`/games/${game.id}/rating/me`);
+          const userRatingRes = await api.get(`/games/${game.slug}/rating/me`);
           if (userRatingRes.data.data) {
             setUserRating(userRatingRes.data.data.score);
           }
@@ -104,7 +104,7 @@ export default function GameDetailPage() {
       }
 
       // Get rating stats
-      const statsRes = await api.get(`/games/${game.id}/rating/stats`);
+      const statsRes = await api.get(`/games/${game.slug}/rating/stats`);
       setRatingStats(statsRes.data.data);
     } catch (err) {
       // Silently fail - ratings might not exist yet
@@ -118,7 +118,7 @@ export default function GameDetailPage() {
     if (!game) return;
 
     try {
-      await api.post(`/games/${game.id}/rating`, { score });
+      await api.post(`/games/${game.slug}/rating`, { score });
       setUserRating(score);
       setShowRatingDialog(false);
       

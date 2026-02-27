@@ -174,12 +174,12 @@ export function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/users/${user.username}`} className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/lists" className="cursor-pointer">
                       <List className="mr-2 h-4 w-4" />
@@ -260,14 +260,14 @@ export function Navbar() {
                     <List className="h-4 w-4" />
                     <span>My Lists</span>
                   </Link>
-                  <Link
-                    href="/profile"
-                    className="flex items-center space-x-2 text-sm font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
+                    <Link
+                      href={`/users/${user?.username}`}
+                      className="flex items-center space-x-2 text-sm font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
                   <Link
                     href="/settings"
                     className="flex items-center space-x-2 text-sm font-medium"

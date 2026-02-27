@@ -50,7 +50,7 @@ export function AutoImportGameCard({ game }: AutoImportGameCardProps) {
       console.log('Navigating to /games/' + importedGame.id);
       
       // Navigate to the imported game's detail page using our UUID
-      router.push(`/games/${importedGame.id}`);
+      router.push(`/games/${importedGame.slug}`);
     } catch (error: any) {
       console.error("Failed to import game:", error);
       console.error("Error response:", error.response?.data);
