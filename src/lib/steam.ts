@@ -127,6 +127,12 @@ export async function getSteamProfile(): Promise<SteamProfileInfo> {
   return data.data;
 }
 
+/** Attempt to link a single Steam game to Game Gauge via IGDB */
+export async function linkSteamGame(steamAppId: number): Promise<SteamLibraryEntry> {
+  const { data } = await api.post('/steam/link', { steamAppId });
+  return data.data;
+}
+
 // ──────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,24 +11,49 @@ import {
   formatPlaytimeCompact,
   getSteamHeaderImage,
   getSteamStoreUrl,
+  linkSteamGame,
 } from "@/lib/steam";
-import { Clock, ExternalLink, Gamepad2, Link2 } from "lucide-react";
+import { Clock, ExternalLink, Gamepad2, Link2, Loader2, Download } from "lucide-react";
+import { toast } from "sonner";
 
 interface SteamLibraryCardProps {
   entry: SteamLibraryEntry;
   view?: "grid" | "list";
+  onLinked?: (updatedEntry: SteamLibraryEntry) => void;
 }
 
-export function SteamLibraryCard({ entry, view = "grid" }: SteamLibraryCardProps) {
-  const isMatched = !!entry.game;
-  const coverImage = entry.game?.coverImage || null;
-  const steamImage = getSteamHeaderImage(entry.steamAppId);
+export function SteamLibraryCard({ entry, view = "grid", onLinked }: SteamLibraryCardProps) {
+  const [currentEntry, setCurrentEntry] = useState(entry);
+  const isMatched = !!currentEntry.game;
+  const coverImage = currentEntry.game?.coverImage || null;
+  const steamImage = getSteamHeaderImage(currentEntry.steamAppId);
+
+  const handleLinked = (updated: SteamLibraryEntry) => {
+    setCurrentEntry(updated);
+    onLinked?.(updated);
+  };
 
   if (view === "list") {
-    return <ListCard entry={entry} isMatched={isMatched} steamImage={steamImage} coverImage={coverImage} />;
+    return (
+      <ListCard
+        entry={currentEntry}
+        isMatched={isMatched}
+        steamImage={steamImage}
+        coverImage={coverImage}
+        onLinked={handleLinked}
+      />
+    );
   }
 
-  return <GridCard entry={entry} isMatched={isMatched} steamImage={steamImage} coverImage={coverImage} />;
+  return (
+    <GridCard
+      entry={currentEntry}
+      isMatched={isMatched}
+      steamImage={steamImage}
+      coverImage={coverImage}
+      onLinked={handleLinked}
+    />
+  );
 }
 
 function GridCard({
@@ -35,24 +61,44 @@ function GridCard({
   isMatched,
   steamImage,
   coverImage,
+  onLinked,
 }: {
   entry: SteamLibraryEntry;
   isMatched: boolean;
   steamImage: string;
   coverImage: string | null;
-}) {
-  const inner = (
-    <Card className="group h-full overflow-hidden transition-all hover:shadow-lg hover:scale-[1.02] bg-card">
-      {/* Image */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted">
+  onLinked: (updated: SteamLibraryEntry) => void;
+}) {const [isLinking, setIsLinking] = useState(false);
+
+  const handleLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLinking(true);
+
+    try {
+      const updated = await linkSteamGame(entry.steamAppId);
+      toast.success(`Linked "${entry.name}" to Game Gauge!`);
+      onLinked(updated);
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error?.message || "Could not find a match in IGDB";
+      toast.error(message);
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  return (
+    <Card className="group h-full overflow-hidden transition-all hover:shadow-lg bg-card">
+      {/* Image + Overlay */}
+      <div className="relative aspect-[460/215] overflow-hidden bg-muted">
         <Image
           src={coverImage || steamImage}
           alt={entry.name}
           fill
           className="object-cover transition-transform group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           onError={(e) => {
-            // Fall back to Steam header image if cover fails
             const target = e.target as HTMLImageElement;
             if (target.src !== steamImage) {
               target.src = steamImage;
@@ -62,7 +108,7 @@ function GridCard({
 
         {/* Playtime badge */}
         {entry.playtimeForever > 0 && (
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-2 left-2 z-10">
             <Badge
               variant="secondary"
               className="bg-black/70 text-white border-0 backdrop-blur-sm"
@@ -75,47 +121,80 @@ function GridCard({
 
         {/* Recent playtime badge */}
         {entry.playtimeRecent > 0 && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-2 right-2 z-10">
             <Badge className="bg-green-500/90 text-white border-0">
               {formatPlaytimeCompact(entry.playtimeRecent)} recent
             </Badge>
           </div>
         )}
 
-        {/* Matched indicator */}
-        {isMatched && (
-          <div className="absolute bottom-2 right-2">
-            <Badge
-              variant="secondary"
-              className="bg-primary/90 text-primary-foreground border-0"
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
+          {/* Steam button — always shown */}
+          <a
+            href={getSteamStoreUrl(entry.steamAppId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#1b2838] text-white text-sm font-medium hover:bg-[#2a475e] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ExternalLink className="h-4 w-4" />
+            Steam
+          </a>
+
+          {/* Game Gauge button or Import button */}
+          {isMatched && entry.game ? (
+            <Link
+              href={`/games/${entry.game.slug}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Link2 className="mr-1 h-3 w-3" />
-              Linked
-            </Badge>
-          </div>
-        )}
+              <Gamepad2 className="h-4 w-4" />
+              Game Gauge
+            </Link>
+          ) : (
+            <button
+              onClick={handleLink}
+              disabled={isLinking}
+              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {isLinking ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Linking…
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  Import to Game Gauge
+                </>
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Info */}
       <CardContent className="p-3">
-        <h3 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="font-semibold text-sm line-clamp-2">
           {entry.name}
         </h3>
-        <p className="text-xs text-muted-foreground mt-1">
-          {formatPlaytime(entry.playtimeForever)}
-        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-xs text-muted-foreground">
+            {formatPlaytime(entry.playtimeForever)}
+          </p>
+          {isMatched && (
+            <Badge
+              variant="secondary"
+              className="text-xs bg-primary/10 text-primary border-0"
+            >
+              <Link2 className="mr-1 h-3 w-3" />
+              Linked
+            </Badge>
+          )}
+        </div>
       </CardContent>
     </Card>
-  );
-
-  if (isMatched && entry.game) {
-    return <Link href={`/games/${entry.game.id}`}>{inner}</Link>;
-  }
-
-  return (
-    <a href={getSteamStoreUrl(entry.steamAppId)} target="_blank" rel="noopener noreferrer">
-      {inner}
-    </a>
   );
 }
 
@@ -124,13 +203,35 @@ function ListCard({
   isMatched,
   steamImage,
   coverImage,
+  onLinked,
 }: {
   entry: SteamLibraryEntry;
   isMatched: boolean;
   steamImage: string;
   coverImage: string | null;
+  onLinked: (updated: SteamLibraryEntry) => void;
 }) {
-  const content = (
+  const [isLinking, setIsLinking] = useState(false);
+
+  const handleLink = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsLinking(true);
+
+    try {
+      const updated = await linkSteamGame(entry.steamAppId);
+      toast.success(`Linked "${entry.name}" to Game Gauge!`);
+      onLinked(updated);
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error?.message || "Could not find a match in IGDB";
+      toast.error(message);
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  return (
     <Card className="group overflow-hidden transition-all hover:shadow-md">
       <CardContent className="p-0">
         <div className="flex items-center gap-4">
@@ -169,32 +270,47 @@ function ListCard({
             </div>
           </div>
 
-          {/* Right side badges */}
+          {/* Right side actions */}
           <div className="flex items-center gap-2 pr-4 shrink-0">
-            {isMatched ? (
-              <Badge variant="secondary" className="text-xs">
-                <Link2 className="mr-1 h-3 w-3" />
-                Linked
-              </Badge>
+            {isMatched && entry.game ? (
+              <Link
+                href={`/games/${entry.game.slug}`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+              >
+                <Gamepad2 className="h-3 w-3" />
+                View
+              </Link>
             ) : (
-              <Badge variant="outline" className="text-xs text-muted-foreground">
-                <ExternalLink className="mr-1 h-3 w-3" />
-                Steam
-              </Badge>
+              <button
+                onClick={handleLink}
+                disabled={isLinking}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {isLinking ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Linking…
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3 w-3" />
+                    Import
+                  </>
+                )}
+              </button>
             )}
+            <a
+              href={getSteamStoreUrl(entry.steamAppId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1b2838] text-white text-xs font-medium hover:bg-[#2a475e] transition-colors"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Steam
+            </a>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
-
-  if (isMatched && entry.game) {
-    return <Link href={`/games/${entry.game.id}`}>{content}</Link>;
-  }
-
-  return (
-    <a href={getSteamStoreUrl(entry.steamAppId)} target="_blank" rel="noopener noreferrer">
-      {content}
-    </a>
   );
 }
