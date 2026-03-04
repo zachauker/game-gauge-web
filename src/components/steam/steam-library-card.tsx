@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,25 +14,21 @@ import {
   getSteamStoreUrl,
   linkSteamGame,
 } from "@/lib/steam";
-import { Clock, ExternalLink, Gamepad2, Link2, Loader2, Download } from "lucide-react";
+import { Clock, ExternalLink, Gamepad2, Link2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SteamLibraryCardProps {
   entry: SteamLibraryEntry;
   view?: "grid" | "list";
-  onLinked?: (updatedEntry: SteamLibraryEntry) => void;
 }
 
-export function SteamLibraryCard({ entry, view = "grid", onLinked }: SteamLibraryCardProps) {
+export function SteamLibraryCard({ entry, view = "grid" }: SteamLibraryCardProps) {
   const [currentEntry, setCurrentEntry] = useState(entry);
   const isMatched = !!currentEntry.game;
-  const coverImage = currentEntry.game?.coverImage || null;
   const steamImage = getSteamHeaderImage(currentEntry.steamAppId);
-
-  const handleLinked = (updated: SteamLibraryEntry) => {
-    setCurrentEntry(updated);
-    onLinked?.(updated);
-  };
+  // Always prefer Steam header image — it's landscape and fits the card.
+  // IGDB covers are portrait and look zoomed/cropped in a landscape container.
+  const coverImage = steamImage;
 
   if (view === "list") {
     return (
@@ -40,7 +37,7 @@ export function SteamLibraryCard({ entry, view = "grid", onLinked }: SteamLibrar
         isMatched={isMatched}
         steamImage={steamImage}
         coverImage={coverImage}
-        onLinked={handleLinked}
+        onLinked={setCurrentEntry}
       />
     );
   }
@@ -51,9 +48,52 @@ export function SteamLibraryCard({ entry, view = "grid", onLinked }: SteamLibrar
       isMatched={isMatched}
       steamImage={steamImage}
       coverImage={coverImage}
-      onLinked={handleLinked}
+      onLinked={setCurrentEntry}
     />
   );
+}
+
+/**
+ * Hook to handle the "open in Game Gauge" flow:
+ * - If the game is already linked, navigate directly
+ * - If not, attempt to link via IGDB import, then navigate
+ * - If linking fails, show a toast error
+ */
+function useGameGaugeNav(entry: SteamLibraryEntry, isMatched: boolean, onLinked: (e: SteamLibraryEntry) => void) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Already linked — navigate immediately
+    if (isMatched && entry.game) {
+      router.push(`/games/${entry.game.slug}`);
+      return;
+    }
+
+    // Not linked — try to import
+    setIsLoading(true);
+    try {
+      const updated = await linkSteamGame(entry.steamAppId);
+      onLinked(updated);
+
+      if (updated.game) {
+        router.push(`/games/${updated.game.slug}`);
+      } else {
+        toast.error("Game was imported but could not be linked");
+      }
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error?.message || "Could not find this game in IGDB";
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { handleClick, isLoading };
 }
 
 function GridCard({
@@ -68,25 +108,8 @@ function GridCard({
   steamImage: string;
   coverImage: string | null;
   onLinked: (updated: SteamLibraryEntry) => void;
-}) {const [isLinking, setIsLinking] = useState(false);
-
-  const handleLink = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLinking(true);
-
-    try {
-      const updated = await linkSteamGame(entry.steamAppId);
-      toast.success(`Linked "${entry.name}" to Game Gauge!`);
-      onLinked(updated);
-    } catch (error: any) {
-      const message =
-        error.response?.data?.error?.message || "Could not find a match in IGDB";
-      toast.error(message);
-    } finally {
-      setIsLinking(false);
-    }
-  };
+}) {
+  const { handleClick, isLoading } = useGameGaugeNav(entry, isMatched, onLinked);
 
   return (
     <Card className="group h-full overflow-hidden transition-all hover:shadow-lg bg-card">
@@ -130,7 +153,7 @@ function GridCard({
 
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
-          {/* Steam button — always shown */}
+          {/* Steam button */}
           <a
             href={getSteamStoreUrl(entry.steamAppId)}
             target="_blank"
@@ -142,35 +165,24 @@ function GridCard({
             Steam
           </a>
 
-          {/* Game Gauge button or Import button */}
-          {isMatched && entry.game ? (
-            <Link
-              href={`/games/${entry.game.slug}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Gamepad2 className="h-4 w-4" />
-              Game Gauge
-            </Link>
-          ) : (
-            <button
-              onClick={handleLink}
-              disabled={isLinking}
-              className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-            >
-              {isLinking ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Linking…
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Import to Game Gauge
-                </>
-              )}
-            </button>
-          )}
+          {/* Game Gauge button — always available */}
+          <button
+            onClick={handleClick}
+            disabled={isLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-70"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading…
+              </>
+            ) : (
+              <>
+                <Gamepad2 className="h-4 w-4" />
+                Game Gauge
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -211,25 +223,7 @@ function ListCard({
   coverImage: string | null;
   onLinked: (updated: SteamLibraryEntry) => void;
 }) {
-  const [isLinking, setIsLinking] = useState(false);
-
-  const handleLink = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsLinking(true);
-
-    try {
-      const updated = await linkSteamGame(entry.steamAppId);
-      toast.success(`Linked "${entry.name}" to Game Gauge!`);
-      onLinked(updated);
-    } catch (error: any) {
-      const message =
-        error.response?.data?.error?.message || "Could not find a match in IGDB";
-      toast.error(message);
-    } finally {
-      setIsLinking(false);
-    }
-  };
+  const { handleClick, isLoading } = useGameGaugeNav(entry, isMatched, onLinked);
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-md">
@@ -272,33 +266,23 @@ function ListCard({
 
           {/* Right side actions */}
           <div className="flex items-center gap-2 pr-4 shrink-0">
-            {isMatched && entry.game ? (
-              <Link
-                href={`/games/${entry.game.slug}`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
-              >
-                <Gamepad2 className="h-3 w-3" />
-                View
-              </Link>
-            ) : (
-              <button
-                onClick={handleLink}
-                disabled={isLinking}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
-                {isLinking ? (
-                  <>
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Linking…
-                  </>
-                ) : (
-                  <>
-                    <Download className="h-3 w-3" />
-                    Import
-                  </>
-                )}
-              </button>
-            )}
+            <button
+              onClick={handleClick}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-70"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Loading…
+                </>
+              ) : (
+                <>
+                  <Gamepad2 className="h-3 w-3" />
+                  Game Gauge
+                </>
+              )}
+            </button>
             <a
               href={getSteamStoreUrl(entry.steamAppId)}
               target="_blank"
