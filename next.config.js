@@ -17,6 +17,11 @@ const nextConfig = {
                 hostname: 'media.steampowered.com',
                 pathname: '/steamcommunity/public/images/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'avatars.steamstatic.com',
+                pathname: '/**',
+            },
         ],
     },
     // Production optimizations

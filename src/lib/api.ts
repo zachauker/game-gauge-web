@@ -80,6 +80,10 @@ export interface User {
   lastName?: string;
   bio?: string;
   avatar?: string;
+  steamId?: string;
+  steamUsername?: string;
+  steamAvatar?: string;
+  steamProfileUrl?: string;
   createdAt: string;
 }
 
