@@ -147,7 +147,7 @@ export function SteamProfileSection({ isOwnProfile }: SteamProfileSectionProps) 
                     alt={game.name}
                     fill
                     className="object-cover"
-                    sizes="120px"
+                    sizes="100px"
                   />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="text-white text-[10px] font-medium text-center px-1 line-clamp-2">
@@ -170,7 +170,7 @@ export function SteamProfileSection({ isOwnProfile }: SteamProfileSectionProps) 
         {/* View Full Library Link */}
         {isOwnProfile && (
           <Link href="/steam/library">
-            <Button variant="outline" size="sm" className="w-full">
+            <Button variant="outline" size="sm" className="w-full mt-3">
               <Gamepad2 className="mr-2 h-4 w-4" />
               View Full Library
             </Button>

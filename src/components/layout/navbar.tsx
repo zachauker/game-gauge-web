@@ -102,7 +102,6 @@ export function Navbar() {
                     href="/steam/library"
                     className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5"
                   >
-                    <Gamepad2 className="h-4 w-4" />
                     Steam Library
                   </Link>
                 )}
