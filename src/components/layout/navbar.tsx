@@ -25,6 +25,7 @@ import {
   List,
   Moon,
   Sun,
+  Gamepad2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -57,6 +58,8 @@ export function Navbar() {
     }
     return user.username.substring(0, 2).toUpperCase();
   };
+
+  const hasSteam = !!(user as any)?.steamId;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -94,6 +97,14 @@ export function Navbar() {
                 >
                   My Lists
                 </Link>
+                {hasSteam && (
+                  <Link
+                    href="/steam/library"
+                    className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1.5"
+                  >
+                    Steam Library
+                  </Link>
+                )}
               </>
             ) : (
               <>
@@ -186,6 +197,14 @@ export function Navbar() {
                       My Lists
                     </Link>
                   </DropdownMenuItem>
+                  {hasSteam && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/steam/library" className="cursor-pointer">
+                        <Gamepad2 className="mr-2 h-4 w-4" />
+                        Steam Library
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <Link href="/settings" className="cursor-pointer">
                       <Settings className="mr-2 h-4 w-4" />
@@ -260,14 +279,24 @@ export function Navbar() {
                     <List className="h-4 w-4" />
                     <span>My Lists</span>
                   </Link>
+                  {hasSteam && (
                     <Link
-                      href={`/users/${user?.username}`}
+                      href="/steam/library"
                       className="flex items-center space-x-2 text-sm font-medium"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <User className="h-4 w-4" />
-                      <span>Profile</span>
+                      <Gamepad2 className="h-4 w-4" />
+                      <span>Steam Library</span>
                     </Link>
+                  )}
+                  <Link
+                    href="/profile"
+                    className="flex items-center space-x-2 text-sm font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
                   <Link
                     href="/settings"
                     className="flex items-center space-x-2 text-sm font-medium"
@@ -292,17 +321,16 @@ export function Navbar() {
                       </>
                     )}
                   </button>
-                  <Button
-                    variant="destructive"
-                    className="w-full justify-start"
+                  <button
                     onClick={() => {
                       handleLogout();
                       setMobileMenuOpen(false);
                     }}
+                    className="flex items-center space-x-2 text-sm font-medium text-destructive"
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign out
-                  </Button>
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign out</span>
+                  </button>
                 </>
               ) : (
                 <>

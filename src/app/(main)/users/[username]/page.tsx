@@ -6,7 +6,7 @@ import {MainLayout} from "@/components/layout/main-layout";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
-import {Separator} from "@/components/ui/separator";
+import {SteamProfileSection} from "@/components/steam/steam-profile-section";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {api} from "@/lib/api";
 import {useAuthStore} from "@/store/auth";
@@ -312,6 +312,10 @@ export default function UserProfilePage() {
                             </CardContent>
                         </Card>
                     </div>
+                )}
+
+                {isOwnProfile && (
+                    <SteamProfileSection isOwnProfile={isOwnProfile}/>
                 )}
 
                 {/* Activity Tabs */}

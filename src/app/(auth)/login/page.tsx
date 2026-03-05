@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SteamLoginButton } from "@/components/auth/steam-login-button";
 import { api, getErrorMessage } from "@/lib/api";
 import { useAuthStore } from "@/store/auth";
 import { Loader2 } from "lucide-react";
@@ -134,6 +135,7 @@ export default function LoginPage() {
                 Sign up
               </Link>
             </div>
+              <SteamLoginButton />
           </CardFooter>
         </form>
       </Card>
