@@ -42,6 +42,8 @@ api.interceptors.response.use(
   }
 );
 
+export type ListType = "wishlist" | "playing" | "completed" | "custom";
+
 // Type definitions matching backend API responses
 export interface ApiResponse<T> {
   success: boolean;
@@ -179,6 +181,8 @@ export interface GameList {
   name: string;
   description?: string;
   isPublic: boolean;
+  isDefault: boolean;
+  listType: ListType;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -199,14 +203,33 @@ export interface GameListItem {
   gameId: string;
   notes?: string;
   order: number;
-  addedAt: string;
+  progressPct?: number | null;
+  progressNote?: string | null;
+  completedAt?: string | null;
+  completionType?: string | null;
+  steamAchievements?: SteamAchievements | null;
+  createdAt: string;
   game?: {
     id: string;
     title: string;
     slug: string;
     coverImage?: string;
     releaseDate?: string;
+    platforms?: string[];
   };
+}
+
+export interface SteamAchievements {
+  earned: number;
+  total: number;
+  percentage: number;
+  lastFetched: string;
+}
+
+export interface DefaultLists {
+  wishlist: { id: string; listType: string; name: string } | null;
+  currentlyPlaying: { id: string; listType: string; name: string } | null;
+  completed: { id: string; listType: string; name: string } | null;
 }
 
 // Helper function to extract error message
