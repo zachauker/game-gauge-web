@@ -36,6 +36,8 @@ import {ProgressEditDialog} from "@/components/lists/progress-edit-dialog";
 import {toast} from "sonner";
 import {CompleteGameDialog} from "@/components/lists/complete-game-dialog";
 import {SteamWishlistImportDialog} from "@/components/lists/steam-wishlist-import-dialog";
+import {AchievementBadge} from "@/components/lists/achievement-badge";
+import {syncAchievements} from "@/lib/lists";
 
 interface ProgressEditState {
     gameId: string;
@@ -72,7 +74,7 @@ export default function ListDetailPage() {
     const existingGameIds = new Set(
         (list?.items ?? []).map((item) => item.gameId)
     );
-
+    const [syncingAchievementsFor, setSyncingAchievementsFor] = useState<string | null>(null);
 
     useEffect(() => {
         if (listId) loadList();
@@ -144,6 +146,18 @@ export default function ListDetailPage() {
         });
         toast.success("Progress updated");
         await loadList();
+    };
+
+    const handleSyncAchievements = async (gameId: string) => {
+        setSyncingAchievementsFor(gameId);
+        try {
+            await syncAchievements(listId, gameId);
+            await loadList(); // refresh to pick up the new snapshot
+        } catch (err) {
+            toast.error(getErrorMessage(err));
+        } finally {
+            setSyncingAchievementsFor(null);
+        }
     };
 
     if (isLoading) {
@@ -366,6 +380,13 @@ export default function ListDetailPage() {
                                                                 {item.progressNote}
                                                             </p>
                                                         )}
+
+                                                        <AchievementBadge
+                                                            achievements={item.steamAchievements}
+                                                            isSyncing={syncingAchievementsFor === item.gameId}
+                                                            onSync={() => handleSyncAchievements(item.gameId)}
+                                                            hasSteam={Boolean(user?.steamId)}
+                                                        />
 
                                                         {/* 100% nudge */}
                                                         {isAt100 && (
