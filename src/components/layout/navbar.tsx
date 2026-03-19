@@ -29,6 +29,8 @@ import {
     Gamepad2,
 } from "lucide-react";
 import {useTheme} from "next-themes";
+import Image from "next/image";
+
 
 export function Navbar() {
     const {user, isAuthenticated, clearAuth} = useAuthStore();
@@ -69,11 +71,18 @@ export function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
-                        <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                            <span className="text-primary-foreground font-bold text-xl">G</span>
+                        <div className="h-8 w-8 rounded-full flex items-center justify-center mb-3">
+                            <Image
+                                src="/images/logo/logo-mark-transparent.png"
+                                alt="Game Gauge"
+                                width={28}
+                                height={28}
+                                className="object-cover object-center scale-150"
+                                priority  // add this on above-the-fold logos so it loads immediately
+                            />
                         </div>
-                        <span className="hidden font-bold text-xl sm:inline-block">
-              <span className="text-primary">Game</span> Gauge
+                        <span className="hidden font-bold text-3xl sm:inline-block">
+                            <span className="text-primary font-flexing">Game</span> <span className="font-flexing">Gauge</span>
             </span>
                     </Link>
 

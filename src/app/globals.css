@@ -4,48 +4,101 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* ─── Backgrounds & Surfaces ─── */
+    --background: 327 85% 99%;        /* near-white with blush warmth */
+    --foreground: 255 29% 12%;        /* deep purple-black */
+
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 255 29% 12%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 255 29% 12%;
+
+    /* ─── Primary: Purple #4D4075 ─── */
+    --primary: 255 29% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    /* ─── Secondary: Blush #FEF3F9 ─── */
+    --secondary: 327 85% 97%;
+    --secondary-foreground: 255 29% 35%;
+
+    /* ─── Muted ─── */
+    --muted: 327 40% 95%;
+    --muted-foreground: 198 6% 32%;   /* slate */
+
+    /* ─── Accent: Amber #FBB94B ─── */
+    --accent: 38 96% 64%;
+    --accent-foreground: 255 29% 12%;
+
+    /* ─── Destructive: Red #E30613 ─── */
+    --destructive: 357 95% 46%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ─── Borders & Inputs ─── */
+    --border: 255 20% 88%;
+    --input: 255 20% 88%;
+    --ring: 255 29% 35%;
+
     --radius: 0.5rem;
+
+    /* ─── Brand Accent Palette ─── */
+    /* These are available as CSS variables for custom use  */
+    /* and as Tailwind classes via tailwind.config.js       */
+    --brand-purple: 255 29% 35%;      /* #4D4075 — primary brand */
+    --brand-pink: 333 82% 69%;        /* #F170A9 — highlight / tag */
+    --brand-red: 357 95% 46%;         /* #E30613 — destructive / alert */
+    --brand-amber: 38 96% 64%;        /* #FBB94B — accent / badge */
+    --brand-teal: 181 48% 60%;        /* #6AC8CA — success / info */
+    --brand-blush: 327 85% 97%;       /* #FEF3F9 — soft background */
+    --brand-slate: 198 6% 32%;        /* #4E5558 — muted text / icons */
+    --brand-black: 0 0% 0%;           /* #000000 */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    /* ─── Backgrounds & Surfaces ─── */
+    --background: 255 30% 8%;         /* deep purple-navy */
+    --foreground: 327 85% 97%;        /* blush-white */
+
+    --card: 255 28% 12%;
+    --card-foreground: 327 85% 97%;
+
+    --popover: 255 28% 12%;
+    --popover-foreground: 327 85% 97%;
+
+    /* ─── Primary: lightened Purple ─── */
+    --primary: 255 45% 65%;
+    --primary-foreground: 255 29% 8%;
+
+    /* ─── Secondary ─── */
+    --secondary: 255 25% 18%;
+    --secondary-foreground: 327 85% 97%;
+
+    /* ─── Muted ─── */
+    --muted: 255 20% 16%;
+    --muted-foreground: 198 6% 65%;
+
+    /* ─── Accent: Amber (unchanged — pops on dark) ─── */
+    --accent: 38 96% 64%;
+    --accent-foreground: 255 29% 8%;
+
+    /* ─── Destructive ─── */
+    --destructive: 357 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ─── Borders & Inputs ─── */
+    --border: 255 20% 20%;
+    --input: 255 20% 20%;
+    --ring: 255 45% 65%;
+
+    /* ─── Brand Accent Palette (dark-adjusted) ─── */
+    --brand-purple: 255 45% 65%;
+    --brand-pink: 333 82% 75%;
+    --brand-red: 357 85% 60%;
+    --brand-amber: 38 96% 64%;
+    --brand-teal: 181 48% 65%;
+    --brand-blush: 327 30% 15%;
+    --brand-slate: 198 6% 55%;
+    --brand-black: 0 0% 0%;
   }
 }
 
