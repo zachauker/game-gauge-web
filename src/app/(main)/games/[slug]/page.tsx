@@ -3,12 +3,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { MainLayout } from "@/components/layout/main-layout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RatingDialog } from "@/components/games/rating-dialog";
 import { RatingStats } from "@/components/games/rating-stats";
 import { ReviewList } from "@/components/reviews/review-list";
@@ -17,13 +13,15 @@ import { api, getErrorMessage, RatingStats as RatingStatsType } from "@/lib/api"
 import { useAuthStore } from "@/store/auth";
 import {
   Star,
-  Calendar,
   Gamepad,
   Loader2,
   ChevronLeft,
   MessageSquare,
   ListPlus,
+  Pencil,
 } from "lucide-react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Game {
   id: string;
@@ -40,6 +38,66 @@ interface Game {
   igdbId: number | null;
 }
 
+// ─── Small reusable pieces ────────────────────────────────────────────────────
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 py-2.5 border-b border-brand-purple/10 last:border-0">
+      <span className="text-[11px] uppercase tracking-[0.07em] text-foreground/35 shrink-0">
+        {label}
+      </span>
+      <span className="text-[13px] text-foreground/70 text-right">{value}</span>
+    </div>
+  );
+}
+
+function Tag({ label }: { label: string }) {
+  return (
+    <span className="inline-block text-[11px] px-2.5 py-1 rounded-full bg-brand-purple/15 border border-brand-purple/20 text-foreground/50 hover:text-foreground/70 hover:border-brand-purple/40 transition-colors cursor-default">
+      {label}
+    </span>
+  );
+}
+
+function ActionButton({
+  onClick,
+  icon,
+  label,
+  sublabel,
+  variant = "default",
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  sublabel?: string;
+  variant?: "default" | "primary" | "amber";
+}) {
+  const base =
+    "w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-150 text-left cursor-pointer";
+  const variants = {
+    default:
+      "bg-card border-brand-purple/20 hover:border-brand-purple/40 text-foreground/60 hover:text-foreground/80",
+    primary:
+      "bg-brand-purple/20 border-brand-purple/40 hover:bg-brand-purple/30 text-foreground/80 hover:text-foreground",
+    amber:
+      "bg-brand-amber/10 border-brand-amber/25 hover:bg-brand-amber/15 text-brand-amber",
+  };
+
+  return (
+    <button onClick={onClick} className={`${base} ${variants[variant]}`}>
+      <span className="shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <div className="text-[13px] font-medium leading-tight">{label}</div>
+        {sublabel && (
+          <div className="text-[11px] opacity-60 mt-0.5">{sublabel}</div>
+        )}
+      </div>
+    </button>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function GameDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -49,15 +107,12 @@ export default function GameDetailPage() {
   const [game, setGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("overview");
-  
-  // Rating state
+  const [activeTab, setActiveTab] = useState<"overview" | "reviews">("overview");
+
   const [showRatingDialog, setShowRatingDialog] = useState(false);
   const [userRating, setUserRating] = useState<number | null>(null);
   const [ratingStats, setRatingStats] = useState<RatingStatsType | null>(null);
-  const [isLoadingRatings, setIsLoadingRatings] = useState(false);
 
-  // List state
   const [showAddToListDialog, setShowAddToListDialog] = useState(false);
 
   useEffect(() => {
@@ -65,18 +120,15 @@ export default function GameDetailPage() {
   }, [slug]);
 
   useEffect(() => {
-    if (game && isAuthenticated) {
-      loadRatings();
-    }
-  }, [game, isAuthenticated]);
+    if (game) loadRatings();
+  }, [game?.id, isAuthenticated]);
 
   const loadGameDetails = async () => {
     setIsLoading(true);
     setError("");
-
     try {
-      const response = await api.get(`/games/slug/${slug}`);
-      setGame(response.data.data);
+      const res = await api.get(`/games/slug/${slug}`);
+      setGame(res.data.data);
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -86,204 +138,103 @@ export default function GameDetailPage() {
 
   const loadRatings = async () => {
     if (!game) return;
-
-    setIsLoadingRatings(true);
-    
     try {
-      // Get user's rating if authenticated
       if (isAuthenticated) {
         try {
-          const userRatingRes = await api.get(`/games/${game.slug}/rating/me`);
-          if (userRatingRes.data.data) {
-            setUserRating(userRatingRes.data.data.score);
-          }
-        } catch (err) {
-          // User hasn't rated yet
+          const res = await api.get(`/games/${game.id}/rating/me`);
+          setUserRating(res.data.data?.score ?? null);
+        } catch {
           setUserRating(null);
         }
       }
-
-      // Get rating stats
-      const statsRes = await api.get(`/games/${game.slug}/rating/stats`);
+      const statsRes = await api.get(`/games/${game.id}/rating/stats`);
       setRatingStats(statsRes.data.data);
-    } catch (err) {
-      // Silently fail - ratings might not exist yet
-      console.log('No ratings found yet');
-    } finally {
-      setIsLoadingRatings(false);
+    } catch {
+      // ratings may not exist yet — silent fail is fine
     }
   };
 
   const handleRatingSubmit = async (score: number) => {
     if (!game) return;
-
-    try {
-      await api.post(`/games/${game.slug}/rating`, { score });
-      setUserRating(score);
-      setShowRatingDialog(false);
-      
-      // Reload stats
-      await loadRatings();
-    } catch (err) {
-      alert(getErrorMessage(err));
-    }
+    await api.post(`/games/${game.id}/rating`, { score });
+    setUserRating(score);
+    await loadRatings();
   };
+
+  const releaseYear = game?.releaseDate
+    ? new Date(game.releaseDate).getFullYear()
+    : null;
+
+  // ── Loading ──────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </div>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-brand-purple/50" />
         </div>
       </MainLayout>
     );
   }
+
+  // ── Error ────────────────────────────────────────────────────────────────
 
   if (error || !game) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">Game Not Found</h1>
-            <p className="text-muted-foreground mb-6">
-              {error || "This game doesn't exist in our database."}
-            </p>
-            <Button onClick={() => router.back()}>
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </Button>
-          </div>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-foreground/40 mb-4 text-[14px]">
+            {error || "This game couldn't be found."}
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="text-[13px] text-brand-purple hover:text-foreground transition-colors"
+          >
+            ← Go back
+          </button>
         </div>
       </MainLayout>
     );
   }
 
+  // ── Main render ──────────────────────────────────────────────────────────
+
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          className="mb-4"
+      {/* ── Cinematic backdrop ── */}
+      {game.coverImage && (
+        <div className="absolute inset-x-0 top-14 h-[340px] overflow-hidden pointer-events-none -z-0">
+          <Image
+            src={game.coverImage}
+            alt=""
+            fill
+            className="object-cover object-top scale-110"
+            style={{ filter: "blur(40px)", opacity: 0.12 }}
+            priority
+            aria-hidden
+          />
+          {/* Fade out to background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/60 to-background" />
+        </div>
+      )}
+
+      <div className="relative z-10 container mx-auto px-4 lg:px-8 py-8">
+
+        {/* ── Back nav ── */}
+        <button
           onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[12px] text-foreground/35 hover:text-foreground/70 transition-colors mb-8"
         >
-          <ChevronLeft className="mr-2 h-4 w-4" />
+          <ChevronLeft className="h-3.5 w-3.5" />
           Back
-        </Button>
+        </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Game Info */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Header */}
-            <div>
-              <h1 className="text-4xl font-bold mb-2">{game.title}</h1>
-              
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                {game.releaseDate && (
-                  <div className="flex items-center">
-                    <Calendar className="mr-1.5 h-4 w-4" />
-                    {new Date(game.releaseDate).getFullYear()}
-                  </div>
-                )}
-                {game.developer && (
-                  <div className="flex items-center">
-                    <Gamepad className="mr-1.5 h-4 w-4" />
-                    {game.developer}
-                  </div>
-                )}
-                {game.metacritic && (
-                  <Badge variant="secondary">
-                    Metacritic: {game.metacritic}
-                  </Badge>
-                )}
-              </div>
-            </div>
+        {/* ── Main grid ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_240px] gap-8 lg:gap-10">
 
-            {/* Platforms & Genres */}
-            <div className="flex flex-wrap gap-2">
-              {game.platforms.slice(0, 5).map((platform) => (
-                <Badge key={platform} variant="outline">
-                  {platform}
-                </Badge>
-              ))}
-              {game.platforms.length > 5 && (
-                <Badge variant="outline">+{game.platforms.length - 5} more</Badge>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {game.genres.map((genre) => (
-                <Badge key={genre}>{genre}</Badge>
-              ))}
-            </div>
-
-            <Separator />
-
-            {/* Tabs for Overview and Reviews */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="reviews">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Reviews
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6 mt-6">
-                {/* Description */}
-                {game.description && (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4">About</h2>
-                    <p className="text-muted-foreground whitespace-pre-wrap">
-                      {game.description}
-                    </p>
-                  </div>
-                )}
-
-                {/* Game Details */}
-                <Card>
-                  <CardContent className="pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Game Details</h3>
-                    <div className="space-y-3">
-                      {game.developer && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Developer</span>
-                          <span className="font-medium">{game.developer}</span>
-                        </div>
-                      )}
-                      {game.publisher && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Publisher</span>
-                          <span className="font-medium">{game.publisher}</span>
-                        </div>
-                      )}
-                      {game.releaseDate && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Release Date</span>
-                          <span className="font-medium">
-                            {new Date(game.releaseDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Reviews Tab */}
-              <TabsContent value="reviews" className="mt-6">
-                <ReviewList gameId={game.id} />
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          {/* Right Column - Cover & Actions */}
-          <div className="space-y-6">
-            {/* Cover Image */}
-            <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-muted">
+          {/* ── Col 1: Cover ── */}
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-brand-purple/10 border border-brand-purple/20 shadow-[0_8px_32px_rgba(77,64,117,0.25)]">
               {game.coverImage ? (
                 <Image
                   src={game.coverImage}
@@ -291,114 +242,231 @@ export default function GameDetailPage() {
                   fill
                   className="object-cover"
                   priority
+                  sizes="220px"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Gamepad className="h-24 w-24 text-muted-foreground/30" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Gamepad className="h-12 w-12 text-foreground/10" />
                 </div>
               )}
             </div>
 
-            {/* Rating Section */}
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                <h3 className="text-lg font-semibold">Your Rating</h3>
-                
-                {isAuthenticated ? (
+            {/* Community score pill under cover */}
+            {ratingStats && ratingStats.totalRatings > 0 && (
+              <div className="mt-3 flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <Star className="h-3.5 w-3.5 fill-brand-amber text-brand-amber" />
+                  <span className="text-[15px] font-medium text-foreground/80">
+                    {ratingStats.averageScore.toFixed(1)}
+                  </span>
+                </div>
+                <span className="text-[11px] text-foreground/30">
+                  {ratingStats.totalRatings.toLocaleString()} rating
+                  {ratingStats.totalRatings !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Col 2: Info ── */}
+          <div className="min-w-0 space-y-8">
+
+            {/* Title + meta */}
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {releaseYear && (
+                  <span className="text-[11px] uppercase tracking-[0.08em] text-foreground/35">
+                    {releaseYear}
+                  </span>
+                )}
+                {game.developer && (
                   <>
-                    {userRating ? (
-                      <div className="text-center p-4 bg-accent rounded-lg">
-                        <div className="flex items-center justify-center gap-2 mb-2">
-                          <Star className="h-5 w-5 fill-primary text-primary" />
-                          <span className="text-3xl font-bold">{userRating}</span>
-                          <span className="text-muted-foreground">/10</span>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowRatingDialog(true)}
-                          className="mt-2"
-                        >
-                          Update Rating
-                        </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        className="w-full"
-                        onClick={() => setShowRatingDialog(true)}
-                      >
-                        <Star className="mr-2 h-4 w-4" />
-                        Rate This Game
-                      </Button>
-                    )}
+                    <span className="text-foreground/20">·</span>
+                    <span className="text-[11px] uppercase tracking-[0.08em] text-foreground/35">
+                      {game.developer}
+                    </span>
                   </>
-                ) : (
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Sign in to rate this game
+                )}
+                {game.metacritic && (
+                  <>
+                    <span className="text-foreground/20">·</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded bg-brand-teal/15 border border-brand-teal/25 text-brand-teal">
+                      MC {game.metacritic}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              <h1 className="text-[26px] md:text-[32px] font-medium tracking-tight text-foreground leading-tight">
+                {game.title}
+              </h1>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex items-center gap-1 border-b border-brand-purple/15">
+              {(["overview", "reviews"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2.5 text-[13px] capitalize transition-colors border-b-2 -mb-px ${
+                    activeTab === tab
+                      ? "border-brand-amber text-foreground/90 font-medium"
+                      : "border-transparent text-foreground/40 hover:text-foreground/70"
+                  }`}
+                >
+                  {tab === "reviews" ? (
+                    <span className="flex items-center gap-1.5">
+                      <MessageSquare className="h-3.5 w-3.5" />
+                      Reviews
+                    </span>
+                  ) : (
+                    "Overview"
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            {activeTab === "overview" ? (
+              <div className="space-y-8">
+
+                {/* Description */}
+                {game.description && (
+                  <div>
+                    <p className="text-[14px] text-foreground/55 leading-relaxed whitespace-pre-wrap">
+                      {game.description}
                     </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => router.push("/login")}
-                    >
-                      Sign In
-                    </Button>
                   </div>
                 )}
 
-                {/* Rating Stats */}
-                {ratingStats && (
-                  <>
-                    <Separator />
-                    <RatingStats stats={ratingStats} />
-                  </>
+                {/* Genres */}
+                {game.genres.length > 0 && (
+                  <div>
+                    <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30 mb-3">
+                      Genres
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {game.genres.map((g) => (
+                        <Link key={g} href={`/browse/genre/${encodeURIComponent(g)}`}>
+                          <Tag label={g} />
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
 
-            {/* Add to List Button */}
-            {isAuthenticated && (
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => setShowAddToListDialog(true)}
-              >
-                <ListPlus className="mr-2 h-4 w-4" />
-                Add to List
-              </Button>
+                {/* Platforms */}
+                {game.platforms.length > 0 && (
+                  <div>
+                    <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30 mb-3">
+                      Platforms
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {game.platforms.map((p) => (
+                        <Tag key={p} label={p} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rating stats */}
+                {ratingStats && ratingStats.totalRatings > 0 && (
+                  <div>
+                    <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30 mb-4">
+                      Community ratings
+                    </h3>
+                    <RatingStats stats={ratingStats} />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <ReviewList gameId={game.id} />
+            )}
+          </div>
+
+          {/* ── Col 3: Actions + details ── */}
+          <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
+
+            {/* Your rating */}
+            {isAuthenticated ? (
+              <ActionButton
+                onClick={() => setShowRatingDialog(true)}
+                variant={userRating ? "amber" : "primary"}
+                icon={
+                  <Star
+                    className={`h-4 w-4 ${userRating ? "fill-brand-amber text-brand-amber" : ""}`}
+                  />
+                }
+                label={userRating ? `Your rating: ${userRating}/10` : "Rate this game"}
+                sublabel={userRating ? "Tap to update" : undefined}
+              />
+            ) : (
+              <Link href="/login">
+                <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg border border-brand-purple/20 bg-card text-foreground/40 text-[13px] hover:border-brand-purple/40 transition-colors cursor-pointer">
+                  <Star className="h-4 w-4 shrink-0" />
+                  Sign in to rate
+                </div>
+              </Link>
             )}
 
-            {/* Quick Reviews Button */}
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => setActiveTab("reviews")}
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              View All Reviews
-            </Button>
+            {/* Add to list */}
+            {isAuthenticated && (
+              <ActionButton
+                onClick={() => setShowAddToListDialog(true)}
+                icon={<ListPlus className="h-4 w-4" />}
+                label="Add to list"
+              />
+            )}
+
+            {/* Write review */}
+            {isAuthenticated && (
+              <ActionButton
+                onClick={() => setActiveTab("reviews")}
+                icon={<Pencil className="h-4 w-4" />}
+                label="Write a review"
+              />
+            )}
+
+            {/* Metadata card */}
+            <div className="bg-card border border-brand-purple/15 rounded-lg px-4 py-2 mt-2">
+              {game.developer && (
+                <MetaRow label="Developer" value={game.developer} />
+              )}
+              {game.publisher && (
+                <MetaRow label="Publisher" value={game.publisher} />
+              )}
+              {game.releaseDate && (
+                <MetaRow
+                  label="Released"
+                  value={new Date(game.releaseDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                />
+              )}
+              {game.metacritic && (
+                <MetaRow label="Metacritic" value={String(game.metacritic)} />
+              )}
+            </div>
           </div>
         </div>
-
-        {/* Rating Dialog */}
-        <RatingDialog
-            gameName={ game.title }
-          open={showRatingDialog}
-          onOpenChange={setShowRatingDialog}
-          onSubmit={handleRatingSubmit}
-          currentRating={userRating || undefined}
-        />
-
-        {/* Add to List Dialog */}
-        {game && (
-          <AddToListDialog
-            open={showAddToListDialog}
-            onOpenChange={setShowAddToListDialog}
-            gameId={game.id}
-            gameTitle={game.title}
-          />
-        )}
       </div>
+
+      {/* ── Dialogs ── */}
+      <RatingDialog
+        gameName={game.title}
+        open={showRatingDialog}
+        onOpenChange={setShowRatingDialog}
+        onSubmit={handleRatingSubmit}
+        currentRating={userRating || undefined}
+      />
+      <AddToListDialog
+        open={showAddToListDialog}
+        onOpenChange={setShowAddToListDialog}
+        gameId={game.id}
+        gameTitle={game.title}
+      />
     </MainLayout>
   );
 }

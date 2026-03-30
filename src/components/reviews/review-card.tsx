@@ -1,19 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import {
-  ThumbsUp,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  AlertTriangle,
-} from "lucide-react";
+import Link from "next/link";
+import { Star, ThumbsUp, Edit, Trash2, EyeOff, Eye, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,9 +22,8 @@ interface Review {
     username: string;
     avatar: string | null;
   };
-  _count?: {
-    helpfulVotes: number;
-  };
+  rating?: { id: string; score: number } | null;
+  _count?: { helpfulVotes: number };
 }
 
 interface ReviewCardProps {
@@ -47,6 +35,17 @@ interface ReviewCardProps {
   onToggleHelpful?: () => void;
 }
 
+function timeAgo(dateString: string): string {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(diff / 86_400_000);
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days / 7)}w ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+  return `${Math.floor(days / 365)}y ago`;
+}
+
 export function ReviewCard({
   review,
   currentUserId,
@@ -56,169 +55,147 @@ export function ReviewCard({
   onToggleHelpful,
 }: ReviewCardProps) {
   const [showSpoilers, setShowSpoilers] = useState(false);
-  
-  // Safely handle missing user data
-  if (!review.user) {
-    console.error("ReviewCard: review.user is undefined", review);
-    return null;
-  }
-  
-  const isOwner = currentUserId === review.user.id;
-  const helpfulCount = review._count?.helpfulVotes ?? review.helpfulCount;
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-    );
 
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
-    return date.toLocaleDateString();
-  };
+  if (!review.user) return null;
+
+  const isOwner = currentUserId === review.user.id;
+  const helpfulCount = review._count?.helpfulVotes ?? review.helpfulCount ?? 0;
+  const initials = review.user.username.substring(0, 2).toUpperCase();
+  const score = review.rating?.score;
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
-              {review.user.avatar ? (
-                <img
-                  src={review.user.avatar}
-                  alt={review.user.username}
-                  className="object-cover"
-                />
-              ) : (
-                <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full">
-                  {review.user.username.charAt(0).toUpperCase()}
-                </div>
-              )}
-            </Avatar>
-            <div>
-              <p className="font-semibold">{review.user.username}</p>
-              <p className="text-sm text-muted-foreground">
-                {formatDate(review.createdAt)}
-                {review.updatedAt !== review.createdAt && (
-                  <span className="ml-1">(edited)</span>
-                )}
-              </p>
-            </div>
+    <div className="bg-card border border-brand-purple/15 rounded-lg p-4 hover:border-brand-purple/25 transition-colors">
+
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2.5">
+          {/* Avatar */}
+          <div className="h-8 w-8 rounded-full bg-brand-purple/25 flex items-center justify-center shrink-0 overflow-hidden">
+            {review.user.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={review.user.avatar}
+                alt={review.user.username}
+                className="h-8 w-8 object-cover"
+              />
+            ) : (
+              <span className="text-[10px] font-medium text-foreground/60">
+                {initials}
+              </span>
+            )}
           </div>
 
-          {/* Actions Menu (for owner) */}
+          <div>
+            <Link
+              href={`/users/${review.user.username}`}
+              className="text-[13px] font-medium text-foreground/80 hover:text-foreground transition-colors"
+            >
+              {review.user.username}
+            </Link>
+            <p className="text-[11px] text-foreground/30 mt-0.5">
+              {timeAgo(review.createdAt)}
+              {review.updatedAt !== review.createdAt && " · edited"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Score badge */}
+          {score && (
+            <div className="flex items-center gap-1 bg-brand-amber/10 border border-brand-amber/20 rounded px-2 py-0.5">
+              <Star className="h-3 w-3 fill-brand-amber text-brand-amber" />
+              <span className="text-[12px] font-medium text-brand-amber">
+                {score}/10
+              </span>
+            </div>
+          )}
+
+          {/* Owner menu */}
           {isOwner && (onEdit || onDelete) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <button className="text-foreground/25 hover:text-foreground/60 transition-colors p-0.5">
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent
+                align="end"
+                className="bg-background border-brand-purple/20 text-[13px] min-w-[140px]"
+              >
                 {onEdit && (
-                  <DropdownMenuItem onClick={onEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Review
+                  <DropdownMenuItem
+                    onClick={onEdit}
+                    className="cursor-pointer gap-2 text-foreground/60 focus:text-foreground"
+                  >
+                    <Edit className="h-3.5 w-3.5" />
+                    Edit review
                   </DropdownMenuItem>
                 )}
                 {onDelete && (
                   <DropdownMenuItem
                     onClick={onDelete}
-                    className="text-destructive focus:text-destructive"
+                    className="cursor-pointer gap-2 text-brand-red focus:text-brand-red focus:bg-brand-red/5"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Review
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
         </div>
+      </div>
 
-        {/* Spoiler Warning */}
-        {review.spoilers && !showSpoilers && (
-          <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              <span className="font-semibold text-yellow-600">
-                Spoiler Warning
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3">
-              This review contains spoilers. Click below to reveal.
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowSpoilers(true)}
-              className="gap-2"
-            >
-              <Eye className="h-4 w-4" />
-              Show Spoilers
-            </Button>
-          </div>
-        )}
-
-        {/* Review Content */}
-        {(!review.spoilers || showSpoilers) && (
-          <>
-            <div className="prose prose-sm dark:prose-invert max-w-none mb-4">
-              <p className="whitespace-pre-wrap">{review.content}</p>
-            </div>
-
-            {/* Hide Spoilers Button */}
-            {review.spoilers && showSpoilers && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setShowSpoilers(false)}
-                className="gap-2 mb-4"
-              >
-                <EyeOff className="h-4 w-4" />
-                Hide Spoilers
-              </Button>
-            )}
-          </>
-        )}
-
-        {/* Footer Actions */}
-        <div className="flex items-center gap-4 pt-4 border-t">
-          {/* Helpful Button */}
-          {currentUserId && !isOwner && onToggleHelpful && (
-            <Button
-              variant={hasVotedHelpful ? "default" : "outline"}
-              size="sm"
-              onClick={onToggleHelpful}
-              className="gap-2"
-            >
-              <ThumbsUp className={`h-4 w-4 ${hasVotedHelpful ? "fill-current" : ""}`} />
-              Helpful {helpfulCount > 0 && `(${helpfulCount})`}
-            </Button>
-          )}
-
-          {/* Helpful Count (for non-logged-in or owner) */}
-          {(!currentUserId || isOwner) && helpfulCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <ThumbsUp className="h-4 w-4" />
-              {helpfulCount} {helpfulCount === 1 ? "person" : "people"} found this
-              helpful
-            </div>
-          )}
-
-          {/* Spoiler Badge (if spoilers are hidden) */}
-          {review.spoilers && (
-            <Badge variant="secondary" className="ml-auto">
-              <AlertTriangle className="mr-1 h-3 w-3" />
-              Spoilers
-            </Badge>
-          )}
+      {/* Spoiler gate */}
+      {review.spoilers && !showSpoilers ? (
+        <div className="rounded-lg bg-brand-amber/5 border border-brand-amber/15 px-4 py-3 flex items-center justify-between gap-3 mb-3">
+          <p className="text-[12px] text-foreground/40">
+            This review contains spoilers.
+          </p>
+          <button
+            onClick={() => setShowSpoilers(true)}
+            className="flex items-center gap-1.5 text-[12px] text-brand-amber hover:text-brand-amber/80 transition-colors shrink-0"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Reveal
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <>
+          <p className="text-[13px] text-foreground/60 leading-relaxed whitespace-pre-wrap mb-3">
+            {review.content}
+          </p>
+          {review.spoilers && (
+            <button
+              onClick={() => setShowSpoilers(false)}
+              className="flex items-center gap-1.5 text-[11px] text-foreground/25 hover:text-foreground/50 transition-colors mb-3"
+            >
+              <EyeOff className="h-3 w-3" />
+              Hide spoilers
+            </button>
+          )}
+        </>
+      )}
+
+      {/* Footer */}
+      {onToggleHelpful && (
+        <div className="flex items-center gap-2 pt-2 border-t border-brand-purple/10">
+          <button
+            onClick={onToggleHelpful}
+            className={`flex items-center gap-1.5 text-[12px] transition-colors ${
+              hasVotedHelpful
+                ? "text-brand-teal"
+                : "text-foreground/30 hover:text-foreground/60"
+            }`}
+          >
+            <ThumbsUp className="h-3.5 w-3.5" />
+            Helpful
+            {helpfulCount > 0 && (
+              <span className="text-foreground/30">({helpfulCount})</span>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }

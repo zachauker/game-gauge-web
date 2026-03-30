@@ -4,25 +4,18 @@ import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Check } from "lucide-react";
+import { Loader2, Check, Plus, X, List } from "lucide-react";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 interface GameList {
   id: string;
   name: string;
-  description?: string;
   isPublic: boolean;
-  _count?: {
-    items: number;
-  };
+  _count?: { items: number };
 }
 
 interface AddToListDialogProps {
@@ -40,232 +33,151 @@ export function AddToListDialog({
 }: AddToListDialogProps) {
   const [lists, setLists] = useState<GameList[]>([]);
   const [gameInLists, setGameInLists] = useState<Set<string>>(new Set());
-  const [notes, setNotes] = useState<{ [listId: string]: string }>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
 
-  // Fetch user's lists when dialog opens
   useEffect(() => {
-    if (open) {
-      fetchLists();
-    }
+    if (open) fetchLists();
   }, [open]);
 
   const fetchLists = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      
-      // Get user's lists
-      const listsResponse = await api.get("/lists/me");
-      const userLists = listsResponse.data.data || [];
+      const res = await api.get("/lists/me");
+      const userLists: GameList[] = res.data.data || [];
       setLists(userLists);
 
-      // Check which lists already contain this game
-      const listIds = userLists.map((list: GameList) => list.id);
-      const inListsSet = new Set<string>();
-
-      for (const listId of listIds) {
-        try {
-          const listResponse = await api.get(`/lists/${listId}`);
-          const items = listResponse.data.data.items || [];
-          const hasGame = items.some((item: any) => item.gameId === gameId);
-          if (hasGame) {
-            inListsSet.add(listId);
-          }
-        } catch (error) {
-          // Ignore errors for individual list checks
-          console.error(`Failed to check list ${listId}:`, error);
-        }
-      }
-
-      setGameInLists(inListsSet);
-    } catch (error: any) {
+      // Check membership in parallel
+      const inSet = new Set<string>();
+      await Promise.all(
+        userLists.map(async (list) => {
+          try {
+            const r = await api.get(`/lists/${list.id}`);
+            const items = r.data.data.items || [];
+            if (items.some((item: any) => item.gameId === gameId)) {
+              inSet.add(list.id);
+            }
+          } catch { /* ignore */ }
+        })
+      );
+      setGameInLists(inSet);
+    } catch {
       toast.error("Failed to load lists");
-      console.error("Failed to fetch lists:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddToList = async (listId: string) => {
+  const toggle = async (listId: string) => {
+    const inList = gameInLists.has(listId);
+    setIsSubmitting(listId);
     try {
-      setIsSubmitting(listId);
-
-      const listNotes = notes[listId]?.trim() || undefined;
-
-      await api.post(`/lists/${listId}/games`, {
-        gameId,
-        notes: listNotes,
-      });
-
-      // Update state
-      setGameInLists(prev => new Set(prev).add(listId));
-      toast.success(`Added "${gameTitle}" to list`);
-      
-      // Clear notes for this list
-      setNotes(prev => {
-        const newNotes = { ...prev };
-        delete newNotes[listId];
-        return newNotes;
-      });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || "Failed to add game to list";
-      toast.error(errorMessage);
+      if (inList) {
+        await api.delete(`/lists/${listId}/games/${gameId}`);
+        setGameInLists((prev) => {
+          const next = new Set(prev);
+          next.delete(listId);
+          return next;
+        });
+        toast.success("Removed from list");
+      } else {
+        await api.post(`/lists/${listId}/games`, { gameId });
+        setGameInLists((prev) => new Set(prev).add(listId));
+        toast.success("Added to list");
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || "Something went wrong");
     } finally {
       setIsSubmitting(null);
     }
-  };
-
-  const handleRemoveFromList = async (listId: string) => {
-    try {
-      setIsSubmitting(listId);
-
-      await api.delete(`/lists/${listId}/games/${gameId}`);
-
-      // Update state
-      setGameInLists(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(listId);
-        return newSet;
-      });
-      
-      toast.success(`Removed "${gameTitle}" from list`);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || "Failed to remove game from list";
-      toast.error(errorMessage);
-    } finally {
-      setIsSubmitting(null);
-    }
-  };
-
-  const handleClose = () => {
-    setNotes({});
-    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[80vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Add to List</DialogTitle>
-          <DialogDescription>
-            Choose which lists to add "{gameTitle}" to
-          </DialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm bg-background border-brand-purple/25 p-0 overflow-hidden">
+
+        {/* Header */}
+        <DialogHeader className="px-5 pt-5 pb-0">
+          <div className="flex items-start justify-between">
+            <div>
+              <DialogTitle className="text-[15px] font-medium text-foreground">
+                Add to list
+              </DialogTitle>
+              <p className="text-[12px] text-foreground/40 mt-0.5 line-clamp-1">
+                {gameTitle}
+              </p>
+            </div>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="text-foreground/30 hover:text-foreground/60 transition-colors mt-0.5"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto space-y-3 py-4">
+        {/* List */}
+        <div className="px-5 py-4 max-h-72 overflow-y-auto space-y-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="h-5 w-5 animate-spin text-foreground/30" />
             </div>
           ) : lists.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
+            <div className="py-8 text-center">
+              <List className="h-8 w-8 text-foreground/15 mx-auto mb-3" />
+              <p className="text-[12px] text-foreground/35">
                 You don't have any lists yet.
               </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  handleClose();
-                  // Navigate to lists page - you can implement this with router
-                  window.location.href = "/lists";
-                }}
-              >
-                Create Your First List
-              </Button>
             </div>
           ) : (
             lists.map((list) => {
               const inList = gameInLists.has(list.id);
-              const isProcessing = isSubmitting === list.id;
-
+              const loading = isSubmitting === list.id;
               return (
-                <div
+                <button
                   key={list.id}
-                  className="border rounded-lg p-4 space-y-3 hover:bg-accent/50 transition-colors"
+                  onClick={() => toggle(list.id)}
+                  disabled={loading}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all text-left ${
+                    inList
+                      ? "bg-brand-teal/10 border-brand-teal/25 hover:border-brand-teal/40"
+                      : "bg-card border-brand-purple/15 hover:border-brand-purple/35"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{list.name}</h4>
-                      {list.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {list.description}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {list._count?.items || 0} games • {list.isPublic ? "Public" : "Private"}
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-medium text-foreground/80 truncate">
+                      {list.name}
+                    </p>
+                    {list._count && (
+                      <p className="text-[11px] text-foreground/35 mt-0.5">
+                        {list._count.items} game{list._count.items !== 1 ? "s" : ""}
                       </p>
-                    </div>
-
-                    {inList ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRemoveFromList(list.id)}
-                        disabled={isProcessing}
-                        className="flex-shrink-0"
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Check className="h-4 w-4 mr-1" />
-                            In List
-                          </>
-                        )}
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => handleAddToList(list.id)}
-                        disabled={isProcessing}
-                        className="flex-shrink-0"
-                      >
-                        {isProcessing ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Add
-                          </>
-                        )}
-                      </Button>
                     )}
                   </div>
-
-                  {/* Notes input - only show if not already in list */}
-                  {!inList && (
-                    <div className="space-y-1">
-                      <Label htmlFor={`notes-${list.id}`} className="text-xs">
-                        Notes (optional)
-                      </Label>
-                      <textarea
-                        id={`notes-${list.id}`}
-                        className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        placeholder="Add a personal note..."
-                        value={notes[list.id] || ""}
-                        onChange={(e) =>
-                          setNotes((prev) => ({
-                            ...prev,
-                            [list.id]: e.target.value,
-                          }))
-                        }
-                        maxLength={500}
-                        disabled={isProcessing}
-                      />
-                    </div>
-                  )}
-                </div>
+                  <div className="shrink-0 ml-3">
+                    {loading ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-foreground/30" />
+                    ) : inList ? (
+                      <Check className="h-4 w-4 text-brand-teal" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-foreground/25" />
+                    )}
+                  </div>
+                </button>
               );
             })
           )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        {/* Footer */}
+        <div className="border-t border-brand-purple/15 px-5 py-3">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="w-full text-[13px] text-foreground/40 hover:text-foreground/70 transition-colors text-center"
+          >
             Done
-          </Button>
-        </DialogFooter>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

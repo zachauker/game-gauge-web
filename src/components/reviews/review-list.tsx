@@ -1,17 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ReviewCard } from "./review-card";
 import { WriteReviewDialog } from "./write-review-dialog";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Loader2, MessageSquare, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
@@ -23,27 +15,20 @@ interface Review {
   helpfulCount: number;
   createdAt: string;
   updatedAt: string;
-  user: {
-    id: string;
-    username: string;
-    avatar: string | null;
-  };
-  rating?: {
-    id: string;
-    score: number;
-  } | null;
-  _count?: {
-    helpfulVotes: number;
-  };
-}
-
-interface ReviewListProps {
-  gameId: string;
+  user: { id: string; username: string; avatar: string | null };
+  rating?: { id: string; score: number } | null;
+  _count?: { helpfulVotes: number };
 }
 
 type SortOption = "helpfulCount" | "createdAt" | "updatedAt";
 
-export function ReviewList({ gameId }: ReviewListProps) {
+const SORT_LABELS: Record<SortOption, string> = {
+  helpfulCount: "Most helpful",
+  createdAt: "Newest",
+  updatedAt: "Recently edited",
+};
+
+export function ReviewList({ gameId }: { gameId: string }) {
   const { user } = useAuthStore();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<Review | null>(null);
@@ -54,44 +39,22 @@ export function ReviewList({ gameId }: ReviewListProps) {
   const [totalPages, setTotalPages] = useState(1);
   const [showWriteDialog, setShowWriteDialog] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const LIMIT = 10;
 
-  const limit = 10;
-
-  // Fetch reviews
-  useEffect(() => {
-    fetchReviews();
-  }, [gameId, sortBy, page]);
-
-  // Fetch user's review if logged in
-  useEffect(() => {
-    if (user) {
-      fetchUserReview();
-    }
-  }, [gameId, user]);
+  useEffect(() => { fetchReviews(); }, [gameId, sortBy, page]);
+  useEffect(() => { if (user) fetchUserReview(); }, [gameId, user]);
 
   const fetchReviews = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get(
-        `/games/${gameId}/reviews?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=desc`
+      const res = await api.get(
+        `/games/${gameId}/reviews?page=${page}&limit=${LIMIT}&sortBy=${sortBy}&sortOrder=desc`
       );
-      
-      // Safely handle the response - ensure reviews is always an array
-      const reviewsData = response.data.data || [];
-      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
-      setTotalPages(response.data.pagination?.totalPages || 1);
-
-      // Extract helpful votes if user is logged in and data exists
-      if (user && response.data.helpfulVotes) {
-        setHelpfulVotes(new Set(response.data.helpfulVotes));
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch reviews:", error);
-      // Don't show error toast if it's just an empty result
-      if (error.response?.status !== 404) {
-        toast.error("Failed to load reviews");
-      }
-      // Set to empty array on error
+      const data = res.data.data || [];
+      setReviews(Array.isArray(data) ? data : []);
+      const pagination = res.data.pagination;
+      if (pagination) setTotalPages(pagination.totalPages || 1);
+    } catch {
       setReviews([]);
     } finally {
       setLoading(false);
@@ -100,275 +63,189 @@ export function ReviewList({ gameId }: ReviewListProps) {
 
   const fetchUserReview = async () => {
     try {
-      const response = await api.get(`/games/${gameId}/reviews/me`);
-      const reviewData = response.data.data;
-      
-      // Only set the review if it has user data
-      if (reviewData && reviewData.user) {
-        setUserReview(reviewData);
-      } else {
-        console.warn("User review fetched but missing user data:", reviewData);
-        setUserReview(null);
-      }
-    } catch (error: any) {
-      // User hasn't reviewed yet - this is fine
-      if (error.response?.status !== 404) {
-        console.error("Failed to fetch user review:", error);
-      }
+      const res = await api.get(`/games/${gameId}/reviews/me`);
+      setUserReview(res.data.data || null);
+    } catch {
       setUserReview(null);
     }
   };
 
-  const handleCreateReview = async (data: {
-    content: string;
-    spoilers: boolean;
-  }) => {
-    try {
-      await api.post(`/games/${gameId}/reviews`, data);
-      toast.success("Review posted successfully!");
-      
-      // Re-fetch user review to get full data with user object
-      await fetchUserReview();
-      
-      // Refresh the reviews list
-      fetchReviews();
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || "Failed to post review";
-      toast.error(errorMessage);
-      throw error;
-    }
+  const handleCreateReview = async (data: { content: string; spoilers: boolean }) => {
+    await api.post(`/games/${gameId}/reviews`, data);
+    toast.success("Review published");
+    await fetchReviews();
+    await fetchUserReview();
   };
 
-  const handleUpdateReview = async (data: {
-    content: string;
-    spoilers: boolean;
-  }) => {
+  const handleUpdateReview = async (data: { content: string; spoilers: boolean }) => {
     if (!editingReview) return;
-
-    try {
-      await api.patch(`/reviews/${editingReview.id}`, data);
-      setEditingReview(null);
-      toast.success("Review updated successfully!");
-      
-      // Re-fetch user review to get full data with user object
-      await fetchUserReview();
-      
-      // Refresh the reviews list
-      fetchReviews();
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || "Failed to update review";
-      toast.error(errorMessage);
-      throw error;
-    }
+    await api.patch(`/reviews/${editingReview.id}`, data);
+    toast.success("Review updated");
+    setEditingReview(null);
+    await fetchReviews();
+    await fetchUserReview();
   };
 
   const handleDeleteReview = async (reviewId: string) => {
-    if (!confirm("Are you sure you want to delete this review?")) return;
-
+    if (!confirm("Delete this review? This can't be undone.")) return;
     try {
       await api.delete(`/reviews/${reviewId}`);
-      setUserReview(null);
-      toast.success("Review deleted successfully!");
-      fetchReviews(); // Refresh list
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.error?.message || "Failed to delete review";
-      toast.error(errorMessage);
+      toast.success("Review deleted");
+      await fetchReviews();
+      await fetchUserReview();
+    } catch {
+      toast.error("Failed to delete review");
     }
   };
 
   const handleToggleHelpful = async (reviewId: string) => {
-    if (!user) return;
-
-    const hasVoted = helpfulVotes.has(reviewId);
-
+    const voted = helpfulVotes.has(reviewId);
+    setHelpfulVotes((prev) => {
+      const next = new Set(prev);
+      voted ? next.delete(reviewId) : next.add(reviewId);
+      return next;
+    });
     try {
-      // Optimistic update
+      voted
+        ? await api.delete(`/reviews/${reviewId}/helpful`)
+        : await api.post(`/reviews/${reviewId}/helpful`);
+    } catch {
+      // Revert optimistic update
       setHelpfulVotes((prev) => {
-        const newSet = new Set(prev);
-        if (hasVoted) {
-          newSet.delete(reviewId);
-        } else {
-          newSet.add(reviewId);
-        }
-        return newSet;
+        const next = new Set(prev);
+        voted ? next.add(reviewId) : next.delete(reviewId);
+        return next;
       });
-
-      // Update review count optimistically
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? {
-                ...review,
-                helpfulCount: hasVoted
-                  ? review.helpfulCount - 1
-                  : review.helpfulCount + 1,
-              }
-            : review
-        )
-      );
-
-      if (hasVoted) {
-        await api.delete(`/reviews/${reviewId}/helpful`);
-      } else {
-        await api.post(`/reviews/${reviewId}/helpful`, {});
-      }
-    } catch (error: any) {
-      // Revert on error
-      setHelpfulVotes((prev) => {
-        const newSet = new Set(prev);
-        if (hasVoted) {
-          newSet.add(reviewId);
-        } else {
-          newSet.delete(reviewId);
-        }
-        return newSet;
-      });
-
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? {
-                ...review,
-                helpfulCount: hasVoted
-                  ? review.helpfulCount + 1
-                  : review.helpfulCount - 1,
-              }
-            : review
-        )
-      );
-
-      const errorMessage = error.response?.data?.error?.message || "Failed to update vote";
-      toast.error(errorMessage);
     }
   };
 
-  const handleSortChange = (value: SortOption) => {
-    setSortBy(value);
-    setPage(1); // Reset to first page
-  };
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-5">
+
+      {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Reviews</h2>
+        {/* Write / Your review button */}
         {user && !userReview && (
-          <Button onClick={() => setShowWriteDialog(true)}>
-            <MessageSquare className="mr-2 h-4 w-4" />
-            Write a Review
-          </Button>
+          <button
+            onClick={() => setShowWriteDialog(true)}
+            className="flex items-center gap-2 text-[13px] font-medium text-foreground/60 hover:text-foreground/90 bg-card border border-brand-purple/20 hover:border-brand-purple/40 rounded-lg px-3.5 py-2 transition-all"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            Write a review
+          </button>
         )}
+        {user && userReview && (
+          <p className="text-[12px] text-foreground/35 italic">
+            You've reviewed this game
+          </p>
+        )}
+        {!user && <div />}
+
+        {/* Sort */}
+        <div className="flex items-center gap-1.5">
+          {(Object.keys(SORT_LABELS) as SortOption[]).map((opt) => (
+            <button
+              key={opt}
+              onClick={() => { setSortBy(opt); setPage(1); }}
+              className={`text-[11px] px-2.5 py-1.5 rounded-md transition-colors ${
+                sortBy === opt
+                  ? "bg-brand-purple/20 text-foreground/80"
+                  : "text-foreground/35 hover:text-foreground/60"
+              }`}
+            >
+              {SORT_LABELS[opt]}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* User's Review (if exists) */}
-      {userReview && userReview.user && (
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold">Your Review</h3>
+      {/* Your review pinned at top */}
+      {userReview && (
+        <div>
+          <p className="text-[11px] uppercase tracking-[0.07em] text-foreground/30 mb-2">
+            Your review
+          </p>
           <ReviewCard
             review={userReview}
             currentUserId={user?.id}
-            hasVotedHelpful={false}
+            hasVotedHelpful={helpfulVotes.has(userReview.id)}
             onEdit={() => setEditingReview(userReview)}
             onDelete={() => handleDeleteReview(userReview.id)}
           />
         </div>
       )}
 
-      {/* Sort Controls */}
-      <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">Sort by:</span>
-        <Select value={sortBy} onValueChange={handleSortChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="helpfulCount">Most Helpful</SelectItem>
-            <SelectItem value="createdAt">Most Recent</SelectItem>
-            <SelectItem value="updatedAt">Recently Updated</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Reviews List */}
+      {/* Review list */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="h-6 w-6 animate-spin text-foreground/20" />
         </div>
-      ) : reviews.length === 0 ? (
-        <div className="text-center py-12">
-          <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No reviews yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Be the first to share your thoughts about this game!
+      ) : reviews.filter((r) => r.user && r.id !== userReview?.id).length === 0 ? (
+        <div className="text-center py-14">
+          <MessageSquare className="h-8 w-8 text-foreground/10 mx-auto mb-3" />
+          <p className="text-[13px] text-foreground/35 mb-1">No reviews yet</p>
+          <p className="text-[12px] text-foreground/25">
+            Be the first to share your thoughts
           </p>
           {user && !userReview && (
-            <Button onClick={() => setShowWriteDialog(true)}>
-              Write the First Review
-            </Button>
+            <button
+              onClick={() => setShowWriteDialog(true)}
+              className="mt-4 text-[12px] text-brand-purple hover:text-foreground/80 transition-colors"
+            >
+              Write the first review →
+            </button>
           )}
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {reviews
-            .filter(review => review.user) // Filter out reviews without user data
+            .filter((r) => r.user && r.id !== userReview?.id)
             .map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              currentUserId={user?.id}
-              hasVotedHelpful={helpfulVotes.has(review.id)}
-              onEdit={
-                review.user.id === user?.id
-                  ? () => setEditingReview(review)
-                  : undefined
-              }
-              onDelete={
-                review.user.id === user?.id
-                  ? () => handleDeleteReview(review.id)
-                  : undefined
-              }
-              onToggleHelpful={
-                user && review.user.id !== user.id
-                  ? () => handleToggleHelpful(review.id)
-                  : undefined
-              }
-            />
-          ))}
+              <ReviewCard
+                key={review.id}
+                review={review}
+                currentUserId={user?.id}
+                hasVotedHelpful={helpfulVotes.has(review.id)}
+                onEdit={review.user.id === user?.id ? () => setEditingReview(review) : undefined}
+                onDelete={review.user.id === user?.id ? () => handleDeleteReview(review.id) : undefined}
+                onToggleHelpful={user && review.user.id !== user.id ? () => handleToggleHelpful(review.id) : undefined}
+              />
+            ))}
         </div>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
+            className="flex items-center gap-1 text-[12px] text-foreground/40 hover:text-foreground/70 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
           >
+            <ChevronLeft className="h-3.5 w-3.5" />
             Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
+          </button>
+          <span className="text-[12px] text-foreground/30">
+            {page} / {totalPages}
           </span>
-          <Button
-            variant="outline"
+          <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
+            className="flex items-center gap-1 text-[12px] text-foreground/40 hover:text-foreground/70 disabled:opacity-25 disabled:cursor-not-allowed transition-colors"
           >
             Next
-          </Button>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
         </div>
       )}
 
-      {/* Write Review Dialog */}
+      {/* Dialogs */}
       <WriteReviewDialog
         open={showWriteDialog}
         onOpenChange={setShowWriteDialog}
         onSubmit={handleCreateReview}
         mode="create"
       />
-
-      {/* Edit Review Dialog */}
       {editingReview && (
         <WriteReviewDialog
           open={!!editingReview}
