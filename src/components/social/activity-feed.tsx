@@ -1,8 +1,7 @@
 "use client";
 
-import {ActivityEventCard} from "@/components/social/activity-event-card";
+import { ActivityEventCard } from "@/components/social/activity-event-card";
 import { useFeed } from "@/hooks/useFeed";
-import { Button } from "@/components/ui/button";
 import { Loader2, Rss } from "lucide-react";
 
 type FeedMode = "personal" | "global" | "user";
@@ -12,6 +11,8 @@ interface ActivityFeedProps {
   username?: string;
   isOwnActivity?: boolean;
   emptyMessage?: string;
+  /** Optional CTA rendered below the empty-state message */
+  emptyAction?: React.ReactNode;
 }
 
 export function ActivityFeed({
@@ -19,6 +20,7 @@ export function ActivityFeed({
   username,
   isOwnActivity = false,
   emptyMessage = "No activity yet.",
+  emptyAction,
 }: ActivityFeedProps) {
   const { events = [], hasMore, isLoading, isLoadingMore, error, loadMore } =
     useFeed({ mode, username });
@@ -29,7 +31,7 @@ export function ActivityFeed({
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className="h-20 rounded-lg border bg-muted animate-pulse"
+            className="h-20 rounded-lg border border-brand-purple/10 bg-card animate-pulse"
           />
         ))}
       </div>
@@ -38,17 +40,18 @@ export function ActivityFeed({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center">
-        <p className="text-sm text-destructive">{error}</p>
+      <div className="rounded-lg border border-brand-red/20 bg-brand-red/5 p-6 text-center">
+        <p className="text-[13px] text-brand-red">{error}</p>
       </div>
     );
   }
 
   if (events.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed py-16 text-center">
-        <Rss className="h-10 w-10 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      <div className="flex flex-col items-center gap-2 rounded-lg border border-brand-purple/15 bg-card py-16 text-center">
+        <Rss className="h-8 w-8 text-foreground/20" />
+        <p className="text-[13px] text-foreground/40">{emptyMessage}</p>
+        {emptyAction}
       </div>
     );
   }
@@ -64,17 +67,14 @@ export function ActivityFeed({
       ))}
 
       {hasMore && (
-        <Button
-          variant="outline"
-          className="mt-2 w-full"
+        <button
           onClick={loadMore}
           disabled={isLoadingMore}
+          className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-[13px] text-foreground/50 hover:text-foreground/80 transition-colors disabled:opacity-50"
         >
-          {isLoadingMore ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
+          {isLoadingMore && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Load more
-        </Button>
+        </button>
       )}
     </div>
   );
