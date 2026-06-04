@@ -28,7 +28,14 @@ const SORT_LABELS: Record<SortOption, string> = {
   updatedAt: "Recently edited",
 };
 
-export function ReviewList({ gameId }: { gameId: string }) {
+export function ReviewList({
+  gameId,
+  onReviewChange,
+}: {
+  gameId: string;
+  /** Called after any create/update/delete so the parent can refresh derived state */
+  onReviewChange?: () => void;
+}) {
   const { user } = useAuthStore();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<Review | null>(null);
@@ -75,6 +82,7 @@ export function ReviewList({ gameId }: { gameId: string }) {
     toast.success("Review published");
     await fetchReviews();
     await fetchUserReview();
+    onReviewChange?.();
   };
 
   const handleUpdateReview = async (data: { content: string; spoilers: boolean }) => {
@@ -84,6 +92,7 @@ export function ReviewList({ gameId }: { gameId: string }) {
     setEditingReview(null);
     await fetchReviews();
     await fetchUserReview();
+    onReviewChange?.();
   };
 
   const handleDeleteReview = async (reviewId: string) => {
@@ -93,6 +102,7 @@ export function ReviewList({ gameId }: { gameId: string }) {
       toast.success("Review deleted");
       await fetchReviews();
       await fetchUserReview();
+      onReviewChange?.();
     } catch {
       toast.error("Failed to delete review");
     }
