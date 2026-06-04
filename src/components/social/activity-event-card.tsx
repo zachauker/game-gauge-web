@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import {
   Star,
   MessageSquare,
@@ -15,22 +14,23 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { ActivityEvent, getEventLink, getActivityDescription, timeAgo } from "@/lib/social";
-import {EventInteractions} from "@/components/social/event-interactions";
-import { cn } from "@/lib/utils";
+import { EventInteractions } from "@/components/social/event-interactions";
 
-// ─── Icon + colour map ─────────────────────────────────────────────────────────
+// ─── Event type display config ────────────────────────────────────────────────
+// Icon colours mapped to brand tokens for visual consistency with the rest of
+// the app. Amber = ratings, teal = content/completion, purple = primary actions.
 
 const EVENT_META: Record<
   ActivityEvent["type"],
-  { icon: React.ReactNode; colourClass: string; label: string }
+  { icon: React.ReactNode; colourClass: string; bgClass: string; label: string }
 > = {
-  RATED_GAME:     { icon: <Star className="h-3.5 w-3.5" />,         colourClass: "text-yellow-500", label: "Rating" },
-  REVIEWED_GAME:  { icon: <MessageSquare className="h-3.5 w-3.5" />, colourClass: "text-blue-500",   label: "Review" },
-  COMPLETED_GAME: { icon: <Trophy className="h-3.5 w-3.5" />,        colourClass: "text-green-500",  label: "Completed" },
-  STARTED_GAME:   { icon: <Gamepad2 className="h-3.5 w-3.5" />,      colourClass: "text-purple-500", label: "Playing" },
-  ADDED_TO_LIST:  { icon: <ListPlus className="h-3.5 w-3.5" />,      colourClass: "text-orange-500", label: "Added" },
-  CREATED_LIST:   { icon: <List className="h-3.5 w-3.5" />,          colourClass: "text-indigo-500", label: "New List" },
-  FOLLOWED_USER:  { icon: <UserPlus className="h-3.5 w-3.5" />,      colourClass: "text-pink-500",   label: "Follow" },
+  RATED_GAME:     { icon: <Star className="h-3 w-3" />,         colourClass: "text-brand-amber",      bgClass: "bg-brand-amber/10 border-brand-amber/20",    label: "Rating"    },
+  REVIEWED_GAME:  { icon: <MessageSquare className="h-3 w-3" />, colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Review"    },
+  COMPLETED_GAME: { icon: <Trophy className="h-3 w-3" />,        colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Completed" },
+  STARTED_GAME:   { icon: <Gamepad2 className="h-3 w-3" />,      colourClass: "text-brand-purple",     bgClass: "bg-brand-purple/10 border-brand-purple/20",  label: "Playing"   },
+  ADDED_TO_LIST:  { icon: <ListPlus className="h-3 w-3" />,      colourClass: "text-brand-amber/70",   bgClass: "bg-brand-amber/8 border-brand-amber/15",     label: "Added"     },
+  CREATED_LIST:   { icon: <List className="h-3 w-3" />,          colourClass: "text-brand-purple/70",  bgClass: "bg-brand-purple/8 border-brand-purple/15",   label: "New List"  },
+  FOLLOWED_USER:  { icon: <UserPlus className="h-3 w-3" />,      colourClass: "text-brand-pink",       bgClass: "bg-brand-pink/10 border-brand-pink/20",      label: "Follow"    },
 };
 
 interface ActivityEventCardProps {
@@ -42,56 +42,55 @@ export function ActivityEventCard({
   event,
   isOwnActivity = false,
 }: ActivityEventCardProps) {
-  const typeMeta   = EVENT_META[event.type];
-  const deepLink   = getEventLink(event);
-  const excerpt    = event.meta?.excerpt as string | undefined;
-  const score      = event.meta?.score as number | undefined;
-  const listName   = event.meta?.listName as string | undefined;
+  const typeMeta         = EVENT_META[event.type];
+  const deepLink         = getEventLink(event);
+  const excerpt          = event.meta?.excerpt as string | undefined;
+  const score            = event.meta?.score as number | undefined;
+  const listName         = event.meta?.listName as string | undefined;
   const followedUsername = event.meta?.username as string | undefined;
-  const actorLabel = isOwnActivity ? "You" : event.user.username;
-  const description = getActivityDescription(event);
+  const actorLabel       = isOwnActivity ? "You" : event.user.username;
+  const description      = getActivityDescription(event);
 
   return (
-    <article className="rounded-lg border bg-card p-3 hover:bg-accent/20 transition-colors">
+    <article className="rounded-lg border border-brand-purple/15 bg-card p-3 hover:border-brand-purple/30 transition-colors">
       <div className="flex gap-3">
-        {/* ── Avatar ──────────────────────────────────────────────────────── */}
+
+        {/* ── Avatar ── */}
         <Link href={`/users/${event.user.username}`} className="shrink-0" tabIndex={-1}>
           <Avatar className="h-9 w-9">
             {event.user.avatar && (
               <AvatarImage src={event.user.avatar} alt={event.user.username} />
             )}
-            <AvatarFallback className="text-xs">
+            <AvatarFallback className="bg-brand-purple/20 text-[11px] font-medium text-foreground/70">
               {event.user.username.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Link>
 
-        {/* ── Main body ────────────────────────────────────────────────────── */}
+        {/* ── Main body ── */}
         <div className="flex-1 min-w-0 space-y-1">
 
-          {/* Top row */}
+          {/* Top row: description + type badge + timestamp */}
           <div className="flex items-start justify-between gap-2">
-            <p className="text-sm leading-snug">
+            <p className="text-[13px] leading-snug">
               <Link
                 href={`/users/${event.user.username}`}
-                className="font-semibold hover:text-primary transition-colors"
+                className="font-medium text-foreground hover:text-brand-purple transition-colors"
               >
                 {actorLabel}
               </Link>{" "}
-              <span className="text-muted-foreground">{description}</span>
+              <span className="text-foreground/50">{description}</span>
             </p>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <Badge
-                variant="secondary"
-                className={cn("gap-1 text-[11px] px-1.5 py-0", typeMeta.colourClass)}
-              >
+              {/* Event type badge */}
+              <span className={`inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded border ${typeMeta.colourClass} ${typeMeta.bgClass}`}>
                 {typeMeta.icon}
                 {typeMeta.label}
-              </Badge>
+              </span>
               <time
                 dateTime={event.createdAt}
-                className="text-xs text-muted-foreground whitespace-nowrap"
+                className="text-[11px] text-foreground/30 whitespace-nowrap"
                 title={new Date(event.createdAt).toLocaleString()}
               >
                 {timeAgo(event.createdAt)}
@@ -101,21 +100,21 @@ export function ActivityEventCard({
 
           {/* Review excerpt */}
           {excerpt && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed italic">
+            <p className="text-[12px] text-foreground/40 line-clamp-2 leading-relaxed italic">
               &ldquo;{excerpt}&rdquo;
             </p>
           )}
 
           {/* List name for CREATED_LIST */}
           {listName && event.type === "CREATED_LIST" && (
-            <p className="text-xs text-muted-foreground">{listName}</p>
+            <p className="text-[12px] text-foreground/40">{listName}</p>
           )}
 
           {/* Followed user link */}
           {event.type === "FOLLOWED_USER" && followedUsername && (
             <Link
               href={`/users/${followedUsername}`}
-              className="text-xs font-medium text-primary hover:underline"
+              className="text-[12px] font-medium text-brand-purple hover:text-foreground transition-colors"
             >
               @{followedUsername}
             </Link>
@@ -125,18 +124,18 @@ export function ActivityEventCard({
           {deepLink && (
             <Link
               href={deepLink}
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-[11px] text-foreground/35 hover:text-brand-purple transition-colors"
             >
               <ExternalLink className="h-3 w-3" />
-              {event.type === "REVIEWED_GAME"  && "Read review"}
-              {event.type === "CREATED_LIST"   && "View list"}
+              {event.type === "REVIEWED_GAME"                                                                  && "Read review"}
+              {event.type === "CREATED_LIST"                                                                   && "View list"}
               {(event.type === "ADDED_TO_LIST" || event.type === "STARTED_GAME" || event.type === "COMPLETED_GAME") && "View list"}
-              {event.type === "RATED_GAME"     && "View game"}
-              {event.type === "FOLLOWED_USER"  && `View @${followedUsername}`}
+              {event.type === "RATED_GAME"                                                                     && "View game"}
+              {event.type === "FOLLOWED_USER"                                                                  && `View @${followedUsername}`}
             </Link>
           )}
 
-          {/* Interactions bar */}
+          {/* Likes + comments */}
           <EventInteractions
             eventId={event.id}
             initialLikeCount={event.likeCount ?? 0}
@@ -145,10 +144,10 @@ export function ActivityEventCard({
           />
         </div>
 
-        {/* ── Game thumbnail (right) ───────────────────────────────────────── */}
+        {/* ── Game thumbnail ── */}
         {event.game && event.type !== "FOLLOWED_USER" && (
           <Link href={`/games/${event.game.slug}`} className="shrink-0 self-start" tabIndex={-1}>
-            <div className="relative h-14 w-10 overflow-hidden rounded">
+            <div className="relative h-14 w-10 overflow-hidden rounded border border-brand-purple/10">
               {event.game.coverImage ? (
                 <Image
                   src={event.game.coverImage}
@@ -158,22 +157,23 @@ export function ActivityEventCard({
                   className="object-cover"
                 />
               ) : (
-                <div className="h-full w-full bg-muted flex items-center justify-center">
-                  <Gamepad2 className="h-4 w-4 text-muted-foreground" />
+                <div className="h-full w-full bg-brand-purple/10 flex items-center justify-center">
+                  <Gamepad2 className="h-4 w-4 text-foreground/20" />
                 </div>
               )}
             </div>
           </Link>
         )}
 
-        {/* ── Score pill for ratings ───────────────────────────────────────── */}
+        {/* ── Score pill for ratings ── */}
         {score !== undefined && (
-          <div className="shrink-0 self-start flex items-center justify-center h-9 w-9 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-            <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
+          <div className="shrink-0 self-start flex items-center justify-center h-9 w-9 rounded-full bg-brand-amber/10 border border-brand-amber/20">
+            <span className="text-[13px] font-semibold text-brand-amber">
               {score}
             </span>
           </div>
         )}
+
       </div>
     </article>
   );
