@@ -3,11 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActivityFeed } from "@/components/social/activity-feed";
 import { SuggestedUsers } from "@/components/social/suggested-users";
 import { useAuthStore } from "@/store/auth";
-import { Rss, Globe } from "lucide-react";
 
 export default function FeedPage() {
   const { isAuthenticated } = useAuthStore();
@@ -28,52 +26,38 @@ export default function FeedPage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 lg:px-8 py-10">
         <div className="mx-auto max-w-5xl">
-          {/* Header */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold tracking-tight">Activity</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              See what your friends are playing and reviewing
+
+          {/* ── Header ── */}
+          <div className="mb-8">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-foreground/40 mb-1">
+              Feed
+            </p>
+            <h1 className="text-2xl font-medium tracking-tight text-foreground">
+              Friend activity
+            </h1>
+            <p className="text-[13px] text-foreground/40 mt-1">
+              What the people you follow are playing and reviewing.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
-            {/* Feed */}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_280px]">
+
+            {/* ── Activity feed ── */}
             <div className="min-w-0">
-              <Tabs defaultValue="following">
-                <TabsList className="mb-4 w-full justify-start">
-                  <TabsTrigger value="following" className="gap-2">
-                    <Rss className="h-4 w-4" />
-                    Following
-                  </TabsTrigger>
-                  <TabsTrigger value="global" className="gap-2">
-                    <Globe className="h-4 w-4" />
-                    All Activity
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="following">
-                  <ActivityFeed
-                    mode="personal"
-                    emptyMessage="Follow other users to see their activity here."
-                  />
-                </TabsContent>
-
-                <TabsContent value="global">
-                  <ActivityFeed
-                    mode="global"
-                    emptyMessage="No recent activity on the platform yet."
-                  />
-                </TabsContent>
-              </Tabs>
+              <ActivityFeed
+                mode="personal"
+                emptyMessage="Follow other players to see their activity here."
+              />
             </div>
 
-            {/* Sidebar */}
+            {/* ── Sidebar: suggested users ── */}
             <aside className="hidden lg:flex lg:flex-col lg:gap-4">
               <SuggestedUsers />
             </aside>
           </div>
+
         </div>
       </div>
     </MainLayout>
