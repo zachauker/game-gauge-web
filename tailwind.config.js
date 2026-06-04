@@ -49,6 +49,18 @@ module.exports = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                // Brand palette — maps CSS variables from globals.css.
+                // <alpha-value> enables opacity modifiers (e.g. bg-brand-purple/20).
+                brand: {
+                    purple: "hsl(var(--brand-purple) / <alpha-value>)",
+                    pink:   "hsl(var(--brand-pink)   / <alpha-value>)",
+                    red:    "hsl(var(--brand-red)    / <alpha-value>)",
+                    amber:  "hsl(var(--brand-amber)  / <alpha-value>)",
+                    teal:   "hsl(var(--brand-teal)   / <alpha-value>)",
+                    blush:  "hsl(var(--brand-blush)  / <alpha-value>)",
+                    slate:  "hsl(var(--brand-slate)  / <alpha-value>)",
+                    black:  "hsl(var(--brand-black)  / <alpha-value>)",
+                },
             },
             borderRadius: {
                 lg: "var(--radius)",
