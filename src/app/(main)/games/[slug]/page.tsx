@@ -10,7 +10,8 @@ import { RatingStats } from "@/components/games/rating-stats";
 import { ReviewList } from "@/components/reviews/review-list";
 import { WriteReviewDialog } from "@/components/reviews/write-review-dialog";
 import { AddToListDialog } from "@/components/lists/add-to-list-dialog";
-import { api, getErrorMessage, RatingStats as RatingStatsType } from "@/lib/api";
+import { api, getErrorMessage, RatingStats as RatingStatsType, IGDBGame } from "@/lib/api";
+import { AutoImportGameCard } from "@/components/games/auto-import-game-card";
 import { getMyLists } from "@/lib/lists";
 import { useAuthStore } from "@/store/auth";
 import {
@@ -303,6 +304,9 @@ export default function GameDetailPage() {
   // ── Review write dialog (opened directly from sidebar) ───────────────────
   const [showWriteReviewDialog, setShowWriteReviewDialog] = useState(false);
 
+  // ── Similar games ────────────────────────────────────────────────────────
+  const [similarGames, setSimilarGames] = useState<IGDBGame[]>([]);
+
   // ── Friends' activity ────────────────────────────────────────────────────
   const [friendsActivity, setFriendsActivity] = useState<FriendActivity[]>([]);
 
@@ -321,6 +325,7 @@ export default function GameDetailPage() {
       loadRatings();
       loadTopReview();
       loadFriendsActivity();
+      if (game.igdbId) loadSimilarGames(game.igdbId);
     }
   }, [game?.id, isAuthenticated]);
 
@@ -372,6 +377,15 @@ export default function GameDetailPage() {
       setTotalReviews(pagination?.total ?? reviews.length);
     } catch {
       setTopReview(null);
+    }
+  };
+
+  const loadSimilarGames = async (igdbId: number) => {
+    try {
+      const res = await api.get(`/igdb/similar/${igdbId}`);
+      setSimilarGames(res.data.data ?? []);
+    } catch {
+      // Non-critical — hide section on error
     }
   };
 
@@ -636,6 +650,23 @@ export default function GameDetailPage() {
                     totalReviews={totalReviews}
                     onReadAll={() => setActiveTab("reviews")}
                   />
+                )}
+
+                {/* More like this — horizontal scroll of IGDB similar games */}
+                {similarGames.length > 0 && (
+                  <div>
+                    <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30 mb-4">
+                      More like this
+                    </h3>
+                    {/* Scroll container — no scrollbar visible, drag-friendly */}
+                    <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
+                      {similarGames.map((g) => (
+                        <div key={g.id} className="shrink-0 w-[120px]">
+                          <AutoImportGameCard game={g} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
               </div>
