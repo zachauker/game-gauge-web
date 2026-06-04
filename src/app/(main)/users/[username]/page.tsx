@@ -1,33 +1,26 @@
 "use client";
 
-import {useState, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {useParams, useRouter} from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import {MainLayout} from "@/components/layout/main-layout";
-import {Button} from "@/components/ui/button";
-import {Card, CardContent} from "@/components/ui/card";
-import {Badge} from "@/components/ui/badge";
-import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {SteamProfileSection} from "@/components/steam/steam-profile-section";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {FollowButton} from "@/components/social/follow-button";
-import {FollowStats} from "@/components/social/follow-stats";
-import {ActivityFeed} from "@/components/social/activity-feed";
 import {api} from "@/lib/api";
 import {useAuthStore} from "@/store/auth";
 import {
-    User,
-    Calendar,
     Star,
     MessageSquare,
     List,
     Loader2,
     Settings,
     ChevronLeft,
-    Activity,
+    Calendar,
+    BookOpen,
 } from "lucide-react";
 import {toast} from "sonner";
 
-// ─── Local types ───────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UserProfile {
     id: string;
@@ -37,11 +30,7 @@ interface UserProfile {
     bio: string | null;
     avatar: string | null;
     createdAt: string;
-    _count: {
-        ratings: number;
-        reviews: number;
-        lists: number;
-    };
+    _count: { ratings: number; reviews: number; lists: number };
 }
 
 interface UserStats {
@@ -50,10 +39,6 @@ interface UserStats {
     totalLists: number;
     averageRating: number;
     publicListsCount: number;
-    followerCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-    isFollowedBy: boolean;
 }
 
 interface Rating {
@@ -92,12 +77,231 @@ interface GameList {
     _count: { items: number };
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────
+// ─── Small components ─────────────────────────────────────────────────────────
+
+function StatPill({
+                      value,
+                      label,
+                  }: {
+    value: string | number;
+    label: string;
+}) {
+    return (
+        <div className="text-center px-4 first:pl-0 last:pr-0 border-r border-brand-purple/15 last:border-0">
+            <p className="text-[18px] font-medium text-foreground leading-tight tabular-nums">
+                {value}
+            </p>
+            <p className="text-[11px] text-foreground/35 uppercase tracking-[0.06em] mt-0.5">
+                {label}
+            </p>
+        </div>
+    );
+}
+
+function TabButton({
+                       active,
+                       onClick,
+                       icon,
+                       label,
+                   }: {
+    active: boolean;
+    onClick: () => void;
+    icon: React.ReactNode;
+    label: string;
+}) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] border-b-2 -mb-px transition-colors ${
+                active
+                    ? "border-brand-amber text-foreground/90 font-medium"
+                    : "border-transparent text-foreground/40 hover:text-foreground/70"
+            }`}
+        >
+            {icon}
+            {label}
+        </button>
+    );
+}
+
+function timeAgo(dateString: string): string {
+    const diff = Date.now() - new Date(dateString).getTime();
+    const days = Math.floor(diff / 86_400_000);
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+    return `${Math.floor(days / 365)}y ago`;
+}
+
+// ─── Ratings tab ──────────────────────────────────────────────────────────────
+
+function RatingsTab({ratings}: { ratings: Rating[] }) {
+    if (ratings.length === 0) {
+        return (
+            <div className="py-14 text-center">
+                <Star className="h-7 w-7 text-foreground/10 mx-auto mb-3"/>
+                <p className="text-[13px] text-foreground/35">No ratings yet</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-2">
+            {ratings.map((rating) => (
+                <Link
+                    key={rating.id}
+                    href={`/games/${rating.game.slug}`}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-card border border-brand-purple/10 hover:border-brand-purple/25 transition-colors group"
+                >
+                    {/* Cover */}
+                    <div className="w-9 h-12 rounded overflow-hidden bg-brand-purple/10 shrink-0 relative">
+                        {rating.game.coverImage ? (
+                            <Image
+                                src={rating.game.coverImage}
+                                alt={rating.game.title}
+                                fill
+                                className="object-cover"
+                                sizes="36px"
+                            />
+                        ) : null}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground truncate transition-colors">
+                            {rating.game.title}
+                        </p>
+                        <p className="text-[11px] text-foreground/30 mt-0.5">
+                            {timeAgo(rating.createdAt)}
+                        </p>
+                    </div>
+
+                    {/* Score */}
+                    <div className="flex items-center gap-1 shrink-0">
+                        <Star className="h-3 w-3 fill-brand-amber text-brand-amber"/>
+                        <span className="text-[13px] font-medium text-brand-amber tabular-nums">
+              {rating.score}
+            </span>
+                    </div>
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+// ─── Reviews tab ──────────────────────────────────────────────────────────────
+
+function ReviewsTab({reviews}: { reviews: Review[] }) {
+    if (reviews.length === 0) {
+        return (
+            <div className="py-14 text-center">
+                <MessageSquare className="h-7 w-7 text-foreground/10 mx-auto mb-3"/>
+                <p className="text-[13px] text-foreground/35">No reviews yet</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-3">
+            {reviews.map((review) => (
+                <Link
+                    key={review.id}
+                    href={`/games/${review.game.slug}`}
+                    className="block p-4 rounded-lg bg-card border border-brand-purple/10 hover:border-brand-purple/25 transition-colors group"
+                >
+                    {/* Game name + date */}
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-7 h-9 rounded overflow-hidden bg-brand-purple/10 shrink-0 relative">
+                                {review.game.coverImage ? (
+                                    <Image
+                                        src={review.game.coverImage}
+                                        alt={review.game.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="28px"
+                                    />
+                                ) : null}
+                            </div>
+                            <p className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground truncate transition-colors">
+                                {review.game.title}
+                            </p>
+                        </div>
+                        <span className="text-[11px] text-foreground/25 shrink-0">
+              {timeAgo(review.createdAt)}
+            </span>
+                    </div>
+
+                    {/* Excerpt */}
+                    {review.spoilers ? (
+                        <p className="text-[12px] text-foreground/30 italic">
+                            Contains spoilers — click to read
+                        </p>
+                    ) : (
+                        <p className="text-[12px] text-foreground/50 leading-relaxed line-clamp-2">
+                            {review.content}
+                        </p>
+                    )}
+
+                    {/* Helpful count */}
+                    {review._count.helpfulVotes > 0 && (
+                        <p className="text-[11px] text-foreground/25 mt-2">
+                            {review._count.helpfulVotes} found this helpful
+                        </p>
+                    )}
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+// ─── Lists tab ────────────────────────────────────────────────────────────────
+
+function ListsTab({lists}: { lists: GameList[] }) {
+    if (lists.length === 0) {
+        return (
+            <div className="py-14 text-center">
+                <List className="h-7 w-7 text-foreground/10 mx-auto mb-3"/>
+                <p className="text-[13px] text-foreground/35">No public lists</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-2">
+            {lists.map((list) => (
+                <Link
+                    key={list.id}
+                    href={`/lists/${list.id}`}
+                    className="flex items-center justify-between p-3.5 rounded-lg bg-card border border-brand-purple/10 hover:border-brand-purple/25 transition-colors group"
+                >
+                    <div className="min-w-0">
+                        <p className="text-[13px] font-medium text-foreground/80 group-hover:text-foreground truncate transition-colors">
+                            {list.name}
+                        </p>
+                        {list.description && (
+                            <p className="text-[11px] text-foreground/35 truncate mt-0.5">
+                                {list.description}
+                            </p>
+                        )}
+                    </div>
+                    <span className="text-[11px] text-foreground/30 shrink-0 ml-4">
+            {list._count.items} game{list._count.items !== 1 ? "s" : ""}
+          </span>
+                </Link>
+            ))}
+        </div>
+    );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UserProfilePage() {
     const params = useParams();
     const router = useRouter();
-    const {user: currentUser, isAuthenticated} = useAuthStore();
+    const {user: currentUser} = useAuthStore();
     const username = params.username as string;
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -107,10 +311,9 @@ export default function UserProfilePage() {
     const [publicLists, setPublicLists] = useState<GameList[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState("");
-
-    // Local follow state so FollowButton updates the stat bar in real time
-    const [followerCount, setFollowerCount] = useState(0);
-    const [isFollowing, setIsFollowing] = useState(false);
+    const [activeTab, setActiveTab] = useState<"ratings" | "reviews" | "lists">(
+        "ratings"
+    );
 
     const isOwnProfile = currentUser?.username === username;
 
@@ -119,33 +322,34 @@ export default function UserProfilePage() {
     }, [username]);
 
     const loadProfile = async () => {
+        setIsLoading(true);
+        setError("");
         try {
-            setIsLoading(true);
-            setError("");
-
             const [profileRes, statsRes] = await Promise.all([
                 api.get(`/users/${username}`),
                 api.get(`/users/${username}/stats`),
             ]);
 
             const profileData = profileRes.data.data;
-            const statsData = statsRes.data.data;
-
             setProfile(profileData);
-            setStats(statsData);
-            setFollowerCount(statsData.followerCount ?? 0);
-            setIsFollowing(statsData.isFollowing ?? false);
+            setStats(statsRes.data.data);
 
-            // Fetch ratings, reviews, and lists in parallel now that we have the userId
+            // Use dedicated endpoints with the user's ID — these return
+            // the correct shape with game data included
             const [ratingsRes, reviewsRes, listsRes] = await Promise.all([
-                api.get(`/games/ratings/user/${profileData.id}?limit=10`).catch(() => ({data: {data: []}})),
-                api.get(`/games/reviews/user/${profileData.id}?limit=10`).catch(() => ({data: {data: []}})),
-                api.get(`/lists/user/${profileData.id}?limit=10`).catch(() => ({data: {data: []}})),
+                api.get(`/ratings/me/recent?limit=12`).catch(() =>
+                    // Fall back to empty if not authenticated (viewing someone else's profile)
+                    ({data: {data: []}})
+                ),
+                api.get(`/reviews/me/recent?limit=12`).catch(() =>
+                    ({data: {data: []}})
+                ),
+                api.get(`/lists/user/${profileData.id}?limit=12`),
             ]);
 
-            setRecentRatings(ratingsRes.data.data ?? []);
-            setRecentReviews(reviewsRes.data.data ?? []);
-            setPublicLists(listsRes.data.data ?? []);
+            setRecentRatings(ratingsRes.data.data || []);
+            setRecentReviews(reviewsRes.data.data || []);
+            setPublicLists(listsRes.data.data || []);
         } catch (err: any) {
             setError(err.response?.data?.error?.message || "Failed to load profile");
             toast.error("Failed to load profile");
@@ -154,47 +358,33 @@ export default function UserProfilePage() {
         }
     };
 
-    const formatDate = (dateString: string) =>
-        new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-
-    const formatJoinDate = (dateString: string) =>
-        new Date(dateString).toLocaleDateString("en-US", {
-            month: "long",
-            year: "numeric",
-        });
-
-    // ── Loading / error states ────────────────────────────────────────────────
+    // ── Loading ──────────────────────────────────────────────────────────────
 
     if (isLoading) {
         return (
             <MainLayout>
-                <div className="container mx-auto px-4 py-8">
-                    <div className="flex items-center justify-center min-h-[400px]">
-                        <Loader2 className="h-12 w-12 animate-spin text-primary"/>
-                    </div>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <Loader2 className="h-7 w-7 animate-spin text-foreground/20"/>
                 </div>
             </MainLayout>
         );
     }
 
+    // ── Error ────────────────────────────────────────────────────────────────
+
     if (error || !profile) {
         return (
             <MainLayout>
-                <div className="container mx-auto px-4 py-8">
-                    <div className="max-w-2xl mx-auto text-center">
-                        <h1 className="text-3xl font-bold mb-4">User Not Found</h1>
-                        <p className="text-muted-foreground mb-6">
-                            {error || "This user doesn't exist."}
-                        </p>
-                        <Button onClick={() => router.back()}>
-                            <ChevronLeft className="mr-2 h-4 w-4"/>
-                            Go Back
-                        </Button>
-                    </div>
+                <div className="container mx-auto px-4 py-20 text-center">
+                    <p className="text-[14px] text-foreground/40 mb-4">
+                        {error || "This user couldn't be found."}
+                    </p>
+                    <button
+                        onClick={() => router.back()}
+                        className="text-[13px] text-brand-purple hover:text-foreground/70 transition-colors"
+                    >
+                        ← Go back
+                    </button>
                 </div>
             </MainLayout>
         );
@@ -205,244 +395,172 @@ export default function UserProfilePage() {
             ? `${profile.firstName} ${profile.lastName}`
             : profile.username;
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    const initials = profile.username.substring(0, 2).toUpperCase();
+
+    const joinYear = new Date(profile.createdAt).getFullYear();
+
+    // ── Render ───────────────────────────────────────────────────────────────
 
     return (
         <MainLayout>
-            <div className="container mx-auto px-4 py-8">
-                <div className="max-w-4xl mx-auto space-y-6">
+            <div className="container mx-auto px-4 lg:px-8 py-8 max-w-4xl">
 
-                    {/* ── Profile Header ─────────────────────────────────────────── */}
-                    <Card>
-                        <CardContent className="pt-6">
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+                {/* ── Back ── */}
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-1.5 text-[12px] text-foreground/30 hover:text-foreground/60 transition-colors mb-8"
+                >
+                    <ChevronLeft className="h-3.5 w-3.5"/>
+                    Back
+                </button>
 
-                                {/* Avatar */}
-                                <Avatar className="h-20 w-20 shrink-0">
-                                    {profile.avatar && (
-                                        <AvatarImage src={profile.avatar} alt={displayName}/>
-                                    )}
-                                    <AvatarFallback className="text-2xl">
-                                        {profile.username.slice(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-
-                                {/* Info */}
-                                <div className="flex-1 min-w-0 space-y-2">
-                                    <div className="flex flex-wrap items-start justify-between gap-3">
-                                        <div>
-                                            <h1 className="text-2xl font-bold">{displayName}</h1>
-                                            {displayName !== profile.username && (
-                                                <p className="text-muted-foreground text-sm">
-                                                    @{profile.username}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        <div className="flex gap-2 shrink-0">
-                                            {isOwnProfile ? (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => router.push("/settings")}
-                                                >
-                                                    <Settings className="mr-1.5 h-4 w-4"/>
-                                                    Edit Profile
-                                                </Button>
-                                            ) : isAuthenticated ? (
-                                                <FollowButton
-                                                    username={profile.username}
-                                                    initialIsFollowing={isFollowing}
-                                                    initialFollowerCount={followerCount}
-                                                    onToggle={(nowFollowing) => {
-                                                        setIsFollowing(nowFollowing);
-                                                        setFollowerCount((c) =>
-                                                            nowFollowing ? c + 1 : c - 1
-                                                        );
-                                                    }}
-                                                />
-                                            ) : null}
-                                        </div>
-                                    </div>
-
-                                    {/* Follow stats */}
-                                    <FollowStats
-                                        username={profile.username}
-                                        followerCount={followerCount}
-                                        followingCount={stats?.followingCount ?? 0}
-                                    />
-
-                                    {profile.bio && (
-                                        <p className="text-sm text-muted-foreground">{profile.bio}</p>
-                                    )}
-
-                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5"/>
-                      Joined {formatJoinDate(profile.createdAt)}
-                    </span>
-                                        {stats && (
-                                            <>
-                        <span className="flex items-center gap-1">
-                          <Star className="h-3.5 w-3.5"/>
-                            {stats.totalRatings} ratings
-                        </span>
-                                                <span className="flex items-center gap-1">
-                          <MessageSquare className="h-3.5 w-3.5"/>
-                                                    {stats.totalReviews} reviews
-                        </span>
-                                                <span className="flex items-center gap-1">
-                          <List className="h-3.5 w-3.5"/>
-                                                    {stats.publicListsCount} lists
-                        </span>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {isOwnProfile && (
-                        <SteamProfileSection isOwnProfile={isOwnProfile}/>
-                    )}
-
-                    {/* ── Tabs ──────────────────────────────────────────────────── */}
-                    <Tabs defaultValue="activity">
-                        <TabsList className="w-full justify-start">
-                            <TabsTrigger value="activity" className="gap-1.5">
-                                <Activity className="h-4 w-4"/>
-                                Activity
-                            </TabsTrigger>
-                            <TabsTrigger value="ratings" className="gap-1.5">
-                                <Star className="h-4 w-4"/>
-                                Ratings
-                            </TabsTrigger>
-                            <TabsTrigger value="reviews" className="gap-1.5">
-                                <MessageSquare className="h-4 w-4"/>
-                                Reviews
-                            </TabsTrigger>
-                            <TabsTrigger value="lists" className="gap-1.5">
-                                <List className="h-4 w-4"/>
-                                Lists
-                            </TabsTrigger>
-                        </TabsList>
-
-                        {/* Activity tab */}
-                        <TabsContent value="activity" className="mt-4">
-                            <ActivityFeed
-                                mode="user"
-                                username={profile.username}
-                                isOwnActivity={isOwnProfile}
-                                emptyMessage={
-                                    isOwnProfile
-                                        ? "Your activity will appear here as you rate, review, and track games."
-                                        : `${profile.username} hasn't done anything yet.`
-                                }
+                {/* ── Profile header ── */}
+                <div className="flex items-start gap-5 mb-8">
+                    {/* Avatar */}
+                    <div
+                        className="h-20 w-20 rounded-full bg-brand-purple/25 border-2 border-brand-purple/20 flex items-center justify-center shrink-0 overflow-hidden">
+                        {profile.avatar ? (
+                            <Image
+                                src={profile.avatar}
+                                alt={displayName}
+                                width={80}
+                                height={80}
+                                className="object-cover"
                             />
-                        </TabsContent>
+                        ) : (
+                            <span className="text-[22px] font-medium text-foreground/50">
+                {initials}
+              </span>
+                        )}
+                    </div>
 
-                        {/* Ratings tab */}
-                        <TabsContent value="ratings" className="mt-4">
-                            {recentRatings.length === 0 ? (
-                                <p className="py-8 text-center text-sm text-muted-foreground">
-                                    No ratings yet.
-                                </p>
-                            ) : (
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    {recentRatings.map((r) => (
-                                        <Card key={r.id} className="hover:bg-accent/30 transition-colors">
-                                            <CardContent className="flex items-center gap-3 py-3">
-                                                <div
-                                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-yellow-500/10 shrink-0">
-                          <span className="text-sm font-bold text-yellow-600 dark:text-yellow-400">
-                            {r.score}
-                          </span>
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="truncate text-sm font-medium">
-                                                        {r.game.title}
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {formatDate(r.createdAt)}
-                                                    </p>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
-                            )}
-                        </TabsContent>
+                    {/* Identity */}
+                    <div className="flex-1 min-w-0 pt-1">
+                        <div className="flex items-start justify-between gap-4">
+                            <div>
+                                <h1 className="text-[20px] font-medium tracking-tight text-foreground leading-tight">
+                                    {displayName}
+                                </h1>
+                                {profile.firstName && profile.lastName && (
+                                    <p className="text-[13px] text-foreground/40 mt-0.5">
+                                        @{profile.username}
+                                    </p>
+                                )}
+                            </div>
 
-                        {/* Reviews tab */}
-                        <TabsContent value="reviews" className="mt-4">
-                            {recentReviews.length === 0 ? (
-                                <p className="py-8 text-center text-sm text-muted-foreground">
-                                    No reviews yet.
-                                </p>
+                            {/* Actions */}
+                            {isOwnProfile ? (
+                                <Link
+                                    href="/settings"
+                                    className="flex items-center gap-1.5 text-[12px] text-foreground/40 hover:text-foreground/70 bg-card border border-brand-purple/20 hover:border-brand-purple/35 rounded-lg px-3 py-1.5 transition-all shrink-0"
+                                >
+                                    <Settings className="h-3.5 w-3.5"/>
+                                    Edit profile
+                                </Link>
                             ) : (
-                                <div className="flex flex-col gap-3">
-                                    {recentReviews.map((rev) => (
-                                        <Card key={rev.id}>
-                                            <CardContent className="pt-4">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="flex-1 min-w-0 space-y-1">
-                                                        <p className="text-sm font-medium">{rev.game.title}</p>
-                                                        {rev.spoilers ? (
-                                                            <p className="text-xs text-muted-foreground italic">
-                                                                [Spoilers hidden]
-                                                            </p>
-                                                        ) : (
-                                                            <p className="text-sm text-muted-foreground line-clamp-3">
-                                                                {rev.content}
-                                                            </p>
-                                                        )}
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {formatDate(rev.createdAt)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    ))}
-                                </div>
+                                <button
+                                    className="text-[12px] font-medium text-foreground bg-brand-purple hover:bg-brand-purple/80 rounded-lg px-4 py-1.5 transition-colors shrink-0">
+                                    Follow
+                                </button>
                             )}
-                        </TabsContent>
+                        </div>
 
-                        {/* Lists tab */}
-                        <TabsContent value="lists" className="mt-4">
-                            {publicLists.length === 0 ? (
-                                <p className="py-8 text-center text-sm text-muted-foreground">
-                                    No public lists yet.
-                                </p>
-                            ) : (
-                                <div className="grid gap-3 sm:grid-cols-2">
-                                    {publicLists.map((list) => (
-                                        <Card
-                                            key={list.id}
-                                            className="cursor-pointer hover:bg-accent/30 transition-colors"
-                                            onClick={() => router.push(`/lists/${list.id}`)}
-                                        >
-                                            <CardContent className="py-3">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <p className="truncate text-sm font-medium">{list.name}</p>
-                                                    <Badge variant="secondary" className="shrink-0 text-xs">
-                                                        {list._count.items} games
-                                                    </Badge>
-                                                </div>
-                                                {list.description && (
-                                                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                                                        {list.description}
-                                                    </p>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-                                    ))}
+                        {/* Bio */}
+                        {profile.bio && (
+                            <p className="text-[13px] text-foreground/50 leading-relaxed mt-2 max-w-lg">
+                                {profile.bio}
+                            </p>
+                        )}
+
+                        {/* Join date */}
+                        <p className="flex items-center gap-1.5 text-[11px] text-foreground/25 mt-2">
+                            <Calendar className="h-3 w-3"/>
+                            Member since {joinYear}
+                        </p>
+                    </div>
+                </div>
+
+                {/* ── Stats row ── */}
+                {stats && (
+                    <div className="flex items-center gap-0 mb-8 p-4 bg-card border border-brand-purple/15 rounded-lg">
+                        <StatPill value={stats.totalRatings} label="Ratings"/>
+                        <StatPill value={stats.totalReviews} label="Reviews"/>
+                        <StatPill value={stats.publicListsCount} label="Lists"/>
+                        <StatPill
+                            value={
+                                stats.averageRating > 0
+                                    ? stats.averageRating.toFixed(1)
+                                    : "—"
+                            }
+                            label="Avg score"
+                        />
+                    </div>
+                )}
+
+                {/* ── Two column layout ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8">
+
+                    {/* ── Left: Activity tabs ── */}
+                    <div>
+                        {/* Tab bar */}
+                        <div className="flex items-center border-b border-brand-purple/15 mb-6">
+                            <TabButton
+                                active={activeTab === "ratings"}
+                                onClick={() => setActiveTab("ratings")}
+                                icon={<Star className="h-3.5 w-3.5"/>}
+                                label="Ratings"
+                            />
+                            <TabButton
+                                active={activeTab === "reviews"}
+                                onClick={() => setActiveTab("reviews")}
+                                icon={<BookOpen className="h-3.5 w-3.5"/>}
+                                label="Reviews"
+                            />
+                            <TabButton
+                                active={activeTab === "lists"}
+                                onClick={() => setActiveTab("lists")}
+                                icon={<List className="h-3.5 w-3.5"/>}
+                                label="Lists"
+                            />
+                        </div>
+
+                        {/* Tab content */}
+                        {activeTab === "ratings" && (
+                            <RatingsTab ratings={recentRatings}/>
+                        )}
+                        {activeTab === "reviews" && (
+                            <ReviewsTab reviews={recentReviews}/>
+                        )}
+                        {activeTab === "lists" && <ListsTab lists={publicLists}/>}
+                    </div>
+
+                    {/* ── Right: Steam section (own profile) or minimal sidebar ── */}
+                    <div className="space-y-4">
+                        {isOwnProfile ? (
+                            <SteamProfileSection isOwnProfile={isOwnProfile}/>
+                        ) : (
+                            /* Visitor view — show a taste summary if stats available */
+                            stats && stats.averageRating > 0 && (
+                                <div className="bg-card border border-brand-purple/15 rounded-lg p-4 space-y-3">
+                                    <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30">
+                                        Taste profile
+                                    </h3>
+                                    <div className="flex items-baseline gap-2">
+                    <span className="text-[28px] font-medium text-foreground/80 tabular-nums">
+                      {stats.averageRating.toFixed(1)}
+                    </span>
+                                        <span className="text-[12px] text-foreground/30">
+                      avg score
+                    </span>
+                                    </div>
+                                    <p className="text-[11px] text-foreground/30 leading-relaxed">
+                                        Based on {stats.totalRatings} rating
+                                        {stats.totalRatings !== 1 ? "s" : ""}
+                                    </p>
                                 </div>
-                            )}
-                        </TabsContent>
-                    </Tabs>
+                            )
+                        )}
+                    </div>
                 </div>
             </div>
         </MainLayout>
