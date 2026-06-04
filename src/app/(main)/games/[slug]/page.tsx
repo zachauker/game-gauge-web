@@ -22,6 +22,7 @@ import {
   ListPlus,
   Pencil,
   CheckCircle2,
+  Users,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -51,6 +52,13 @@ interface Review {
   user: { id: string; username: string; avatar: string | null };
   rating?: { id: string; score: number } | null;
   _count?: { helpfulVotes: number };
+}
+
+interface FriendActivity {
+  user:      { id: string; username: string; avatar: string | null };
+  score:     number;
+  hasReview: boolean;
+  ratedAt:   string;
 }
 
 /** A list that contains this game, keyed by listType for display. */
@@ -135,6 +143,67 @@ function ListStatusChips({ statuses }: { statuses: UserListStatus[] }) {
           {LIST_TYPE_LABEL[s.listType] ?? s.name}
         </Link>
       ))}
+    </div>
+  );
+}
+
+// ─── Friends activity panel ───────────────────────────────────────────────────
+// Shown in the sidebar when at least one followed user has rated this game.
+
+function FriendsActivityPanel({ friends }: { friends: FriendActivity[] }) {
+  if (friends.length === 0) return null;
+
+  return (
+    <div className="bg-card border border-brand-purple/15 rounded-lg p-4 space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-1.5">
+        <Users className="h-3.5 w-3.5 text-foreground/30" />
+        <span className="text-[11px] uppercase tracking-[0.07em] text-foreground/35">
+          Friends
+        </span>
+      </div>
+
+      {/* Individual friend rows */}
+      <div className="space-y-2.5">
+        {friends.map((f) => {
+          const initials = f.user.username.substring(0, 2).toUpperCase();
+          return (
+            <div key={f.user.id} className="flex items-center gap-2.5">
+              {/* Avatar */}
+              <Link href={`/users/${f.user.username}`} className="shrink-0">
+                <div className="h-7 w-7 rounded-full bg-brand-purple/20 flex items-center justify-center overflow-hidden">
+                  {f.user.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={f.user.avatar} alt={f.user.username} className="h-7 w-7 object-cover" />
+                  ) : (
+                    <span className="text-[9px] font-medium text-foreground/60">{initials}</span>
+                  )}
+                </div>
+              </Link>
+
+              {/* Username */}
+              <Link
+                href={`/users/${f.user.username}`}
+                className="flex-1 text-[12px] text-foreground/60 hover:text-foreground transition-colors truncate"
+              >
+                {f.user.username}
+              </Link>
+
+              {/* Score + review indicator */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[12px] font-medium text-brand-amber tabular-nums">
+                  {f.score}
+                </span>
+                {f.hasReview && (
+                  <span title="Has a review">
+                    <MessageSquare className="h-3 w-3 text-brand-teal" />
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -234,6 +303,9 @@ export default function GameDetailPage() {
   // ── Review write dialog (opened directly from sidebar) ───────────────────
   const [showWriteReviewDialog, setShowWriteReviewDialog] = useState(false);
 
+  // ── Friends' activity ────────────────────────────────────────────────────
+  const [friendsActivity, setFriendsActivity] = useState<FriendActivity[]>([]);
+
   // ── Top review for overview tab ──────────────────────────────────────────
   const [topReview, setTopReview]         = useState<Review | null>(null);
   const [totalReviews, setTotalReviews]   = useState(0);
@@ -248,6 +320,7 @@ export default function GameDetailPage() {
     if (game) {
       loadRatings();
       loadTopReview();
+      loadFriendsActivity();
     }
   }, [game?.id, isAuthenticated]);
 
@@ -299,6 +372,16 @@ export default function GameDetailPage() {
       setTotalReviews(pagination?.total ?? reviews.length);
     } catch {
       setTopReview(null);
+    }
+  };
+
+  const loadFriendsActivity = async () => {
+    if (!game) return;
+    try {
+      const res = await api.get(`/games/${game.id}/friends-activity`);
+      setFriendsActivity(res.data.data ?? []);
+    } catch {
+      // Non-critical — silently swallow
     }
   };
 
@@ -607,6 +690,9 @@ export default function GameDetailPage() {
 
             {/* List status chips — which lists already contain this game */}
             <ListStatusChips statuses={listStatuses} />
+
+            {/* Friends' ratings panel */}
+            <FriendsActivityPanel friends={friendsActivity} />
 
             {/* Metadata card */}
             <div className="bg-card border border-brand-purple/15 rounded-lg px-4 py-2 mt-2">
