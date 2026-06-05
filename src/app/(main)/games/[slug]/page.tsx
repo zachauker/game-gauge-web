@@ -400,7 +400,19 @@ export default function GameDetailPage() {
     setError("");
     try {
       const res = await api.get(`/games/slug/${slug}`);
-      setGame(res.data.data);
+      const data = res.data.data;
+
+      // Normalise array fields — games imported before the metadata migration
+      // have null rather than [] for these columns. Coerce to empty arrays so
+      // downstream .length / .map calls never throw.
+      setGame({
+        ...data,
+        genres:       data.genres       ?? [],
+        themes:       data.themes       ?? [],
+        gameModes:    data.gameModes     ?? [],
+        perspectives: data.perspectives ?? [],
+        platforms:    data.platforms    ?? [],
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -656,7 +668,7 @@ export default function GameDetailPage() {
                   { label: "Game modes",  items: game.gameModes,    getHref: undefined },
                   { label: "Perspective", items: game.perspectives, getHref: undefined },
                   { label: "Platforms",   items: game.platforms,    getHref: undefined },
-                ].filter(({ items }) => items.length > 0).map(({ label, items, getHref }) => (
+                ].filter(({ items }) => (items?.length ?? 0) > 0).map(({ label, items, getHref }) => (
                   <div key={label}>
                     <h3 className="text-[11px] uppercase tracking-[0.08em] text-foreground/30 mb-3">{label}</h3>
                     <div className="flex flex-wrap gap-2">
