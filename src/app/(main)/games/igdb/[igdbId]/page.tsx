@@ -7,37 +7,25 @@ import { Loader2 } from "lucide-react";
 import { api, getErrorMessage } from "@/lib/api";
 
 /**
- * This page handles IGDB games by:
- * 1. Checking if the game exists in our database by IGDB ID
- * 2. If not, importing it
- * 3. Redirecting to the proper game detail page with our UUID
+ * Internal redirect route — imports a game on first access then
+ * forwards to the canonical game detail page. Never linked to directly
+ * from the UI; only reached via programmatic navigation.
  */
-export default function IGDBGamePage() {
-  const params = useParams();
-  const router = useRouter();
+export default function GameImportPage() {
+  const params  = useParams();
+  const router  = useRouter();
   const [error, setError] = useState("");
-  const igdbId = parseInt(params.igdbId as string, 10);
+  const igdbId  = parseInt(params.igdbId as string, 10);
 
   useEffect(() => {
-    if (isNaN(igdbId)) {
-      setError("Invalid game ID");
-      return;
-    }
-
+    if (isNaN(igdbId)) { setError("Game not found"); return; }
     importAndRedirect();
   }, [igdbId]);
 
   const importAndRedirect = async () => {
     try {
-      // Import or get existing game
-      const response = await api.post("/igdb/import", {
-        igdbId,
-      });
-
-      const game = response.data.data;
-
-      // Redirect to the proper game page with our UUID
-      router.replace(`/games/${game.slug}`);
+      const response = await api.post("/igdb/import", { igdbId });
+      router.replace(`/games/${response.data.data.slug}`);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -46,17 +34,14 @@ export default function IGDBGamePage() {
   if (error) {
     return (
       <MainLayout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">Error Loading Game</h1>
-            <p className="text-muted-foreground mb-6">{error}</p>
-            <button
-              onClick={() => router.back()}
-              className="text-primary hover:underline"
-            >
-              Go Back
-            </button>
-          </div>
+        <div className="container mx-auto px-4 py-20 text-center">
+          <p className="text-[14px] text-foreground/40 mb-4">{error}</p>
+          <button
+            onClick={() => router.back()}
+            className="text-[13px] text-brand-purple hover:text-foreground transition-colors"
+          >
+            ← Go back
+          </button>
         </div>
       </MainLayout>
     );
@@ -64,18 +49,8 @@ export default function IGDBGamePage() {
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">
-              Importing game from IGDB...
-            </h2>
-            <p className="text-muted-foreground">
-              This will only take a moment
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-brand-purple/50" />
       </div>
     </MainLayout>
   );
