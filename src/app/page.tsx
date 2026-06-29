@@ -13,9 +13,6 @@ import {
     Search,
     ArrowRight,
     Gamepad2,
-    Star,
-    BookOpen,
-    TrendingUp,
     Clock,
 } from "lucide-react";
 
@@ -49,40 +46,18 @@ function SectionHeader({
 }) {
     return (
         <div className="flex items-baseline justify-between mb-5">
-            <h2 className="text-[13px] font-medium uppercase tracking-[0.08em] text-foreground/40">
+            <h2 className="text-sm font-semibold text-foreground/80">
                 {title}
             </h2>
             {href && (
                 <Link
                     href={href}
-                    className="flex items-center gap-1 text-[12px] text-foreground/30 hover:text-foreground/60 transition-colors"
+                    className="flex items-center gap-1 text-[12px] text-foreground/50 hover:text-foreground/80 transition-colors"
                 >
                     View all
                     <ArrowRight className="h-3 w-3"/>
                 </Link>
             )}
-        </div>
-    );
-}
-
-function StatCard({
-                      value,
-                      label,
-                      icon,
-                  }: {
-    value: string | number;
-    label: string;
-    icon: React.ReactNode;
-}) {
-    return (
-        <div className="flex flex-col gap-2 bg-card border border-brand-purple/15 rounded-lg p-4">
-            <div className="text-foreground/30">{icon}</div>
-            <div className="text-2xl font-medium tracking-tight text-foreground">
-                {value}
-            </div>
-            <div className="text-[11px] text-foreground/40 uppercase tracking-[0.06em]">
-                {label}
-            </div>
         </div>
     );
 }
@@ -103,8 +78,8 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                             {event.game?.title}
                         </Link>{" "}
                         <span className="text-brand-amber font-medium">
-              {event.rating?.score}/10
-            </span>
+                            {event.rating?.score}/10
+                        </span>
                     </>
                 );
             case "REVIEW":
@@ -146,7 +121,7 @@ function ActivityItem({event}: { event: ActivityEvent }) {
     };
 
     return (
-        <div className="flex items-center gap-3 py-3 border-b border-brand-purple/10 last:border-0">
+        <li className="flex items-center gap-3 py-3 border-b border-brand-purple/10 last:border-0">
             {/* Avatar */}
             <div className="w-7 h-7 rounded-full bg-brand-purple/30 flex items-center justify-center shrink-0">
                 {event.user.avatar ? (
@@ -158,14 +133,14 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                     />
                 ) : (
                     <span className="text-[10px] font-medium text-foreground/60">
-            {initials}
-          </span>
+                        {initials}
+                    </span>
                 )}
             </div>
 
             {/* Text */}
             <div className="flex-1 min-w-0">
-                <p className="text-[12px] text-foreground/50 leading-snug truncate">
+                <p className="text-[12px] text-foreground/60 leading-snug line-clamp-2">
                     <Link
                         href={`/users/${event.user.username}`}
                         className="text-foreground/80 font-medium hover:text-foreground transition-colors"
@@ -177,9 +152,25 @@ function ActivityItem({event}: { event: ActivityEvent }) {
             </div>
 
             {/* Time */}
-            <span className="text-[11px] text-foreground/25 shrink-0">
-        {timeAgo(event.createdAt)}
-      </span>
+            <span className="text-[11px] text-foreground/50 shrink-0">
+                {timeAgo(event.createdAt)}
+            </span>
+        </li>
+    );
+}
+
+// ─── Game grid skeleton ────────────────────────────────────────────────────────
+
+function GameGridSkeleton() {
+    return (
+        <div
+            role="status"
+            aria-label="Loading games"
+            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
+        >
+            {Array.from({length: 6}).map((_, i) => (
+                <div key={i} className="aspect-[3/4] rounded-lg bg-card border border-brand-purple/10 animate-pulse"/>
+            ))}
         </div>
     );
 }
@@ -200,42 +191,25 @@ function AuthenticatedHero({
     return (
         <div className="border-b border-brand-purple/20 px-4 lg:px-8 py-10">
             <div className="container mx-auto">
-                <p className="text-[11px] uppercase tracking-[0.1em] text-brand-amber mb-2">
-                    {greeting}
-                </p>
-                <h1 className="text-2xl font-medium tracking-tight text-foreground mb-1">
+                <p className="text-[11px] text-brand-amber mb-2">{greeting}</p>
+                <h1 className="text-2xl font-medium tracking-tight text-foreground mb-2">
                     {user?.username}
                 </h1>
-                <p className="text-[13px] text-foreground/40 mb-8">
-                    Your gaming journal
-                </p>
-
-                {/* Stats row */}
-                {stats && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <StatCard
-                            value={stats.totalRatings}
-                            label="Games rated"
-                            icon={<Star className="h-4 w-4"/>}
-                        />
-                        <StatCard
-                            value={stats.totalReviews}
-                            label="Reviews written"
-                            icon={<BookOpen className="h-4 w-4"/>}
-                        />
-                        <StatCard
-                            value={stats.totalLists}
-                            label="Lists"
-                            icon={<TrendingUp className="h-4 w-4"/>}
-                        />
-                        <StatCard
-                            value={
-                                stats.averageRating ? stats.averageRating.toFixed(1) : "—"
-                            }
-                            label="Avg. rating"
-                            icon={<Star className="h-4 w-4"/>}
-                        />
-                    </div>
+                {stats ? (
+                    <p className="text-[13px] text-foreground/60">
+                        <span className="text-foreground font-medium">{stats.totalRatings}</span>{" "}rated
+                        {stats.totalReviews > 0 && (
+                            <> · <span className="text-foreground font-medium">{stats.totalReviews}</span>{" "}reviewed</>
+                        )}
+                        {stats.totalLists > 0 && (
+                            <> · <span className="text-foreground font-medium">{stats.totalLists}</span>{" "}{stats.totalLists === 1 ? "list" : "lists"}</>
+                        )}
+                        {stats.averageRating ? (
+                            <> · avg <span className="text-brand-amber font-medium">{stats.averageRating.toFixed(1)}</span></>
+                        ) : null}
+                    </p>
+                ) : (
+                    <p className="text-[13px] text-foreground/60">Your gaming journal</p>
                 )}
             </div>
         </div>
@@ -258,15 +232,13 @@ function GuestHero() {
     return (
         <div className="border-b border-brand-purple/20 px-4 lg:px-8 py-16 md:py-24">
             <div className="container mx-auto max-w-2xl">
-                <p className="text-[11px] uppercase tracking-[0.12em] text-brand-amber mb-4">
+                <p className="text-[12px] font-medium uppercase tracking-[0.06em] text-brand-amber mb-4">
                     A home for every game you've played
                 </p>
-                <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-foreground leading-tight mb-4">
-                    Track, review, and discuss
-                    <br/>
-                    <span className="text-foreground/40">the games that matter to you.</span>
+                <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-foreground leading-tight mb-4 text-balance">
+                    Track, review, and discuss the games that matter to you.
                 </h1>
-                <p className="text-[14px] text-foreground/40 leading-relaxed mb-10 max-w-lg">
+                <p className="text-[14px] text-foreground/60 leading-relaxed mb-10 max-w-lg">
                     GameGauge is a journal for your gaming life — backed by real playtime
                     data, thoughtful reviews, and a community that takes games as seriously
                     as you do.
@@ -282,7 +254,7 @@ function GuestHero() {
                             placeholder="Search for a game to get started…"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-foreground/25 outline-none"
+                            className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-foreground/50 outline-none"
                         />
                     </div>
                     <button
@@ -305,24 +277,12 @@ function GuestHero() {
                     <span className="text-foreground/20">·</span>
                     <Link
                         href="/login"
-                        className="text-[13px] text-foreground/40 hover:text-foreground/70 transition-colors"
+                        className="text-[13px] text-foreground/50 hover:text-foreground/70 transition-colors"
                     >
                         Sign in
                     </Link>
                 </div>
             </div>
-        </div>
-    );
-}
-
-// ─── Game grid skeleton ────────────────────────────────────────────────────────
-
-function GameGridSkeleton() {
-    return (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-            {Array.from({length: 6}).map((_, i) => (
-                <div key={i} className="aspect-[3/4] rounded-lg bg-card border border-brand-purple/10 animate-pulse"/>
-            ))}
         </div>
     );
 }
@@ -339,41 +299,36 @@ export default function HomePage() {
     const [loadingPopular, setLoadingPopular] = useState(true);
     const [loadingRecent, setLoadingRecent] = useState(true);
     const [loadingActivity, setLoadingActivity] = useState(false);
+    const [popularError, setPopularError] = useState(false);
+    const [recentError, setRecentError] = useState(false);
 
-    // Load popular games
     useEffect(() => {
-        getPopularGames(6).then((games) => {
-            setPopularGames(games);
-            setLoadingPopular(false);
-        });
+        getPopularGames(6)
+            .then((games) => setPopularGames(games))
+            .catch(() => setPopularError(true))
+            .finally(() => setLoadingPopular(false));
     }, []);
 
-    // Load recent releases
     useEffect(() => {
-        getRecentGames(6).then((games) => {
-            setRecentGames(games);
-            setLoadingRecent(false);
-        });
+        getRecentGames(6)
+            .then((games) => setRecentGames(games))
+            .catch(() => setRecentError(true))
+            .finally(() => setLoadingRecent(false));
     }, []);
 
-    // Load user-specific data when authenticated
     useEffect(() => {
         if (!isAuthenticated || !user) return;
 
-        // User stats — requires username in path
         api
             .get(`/users/${user.username}/stats`)
             .then((res) => setStats(res.data.data))
-            .catch(() => {
-            });
+            .catch(() => {});
 
-        // Activity — also username-scoped
         setLoadingActivity(true);
         api
             .get(`/users/${user.username}/activity`, {params: {limit: 8}})
             .then((res) => setActivity(res.data.data || []))
-            .catch(() => {
-            })
+            .catch(() => {})
             .finally(() => setLoadingActivity(false));
     }, [isAuthenticated, user]);
 
@@ -398,8 +353,17 @@ export default function HomePage() {
                             <SectionHeader title="Popular right now" href="/search?sort=popular"/>
                             {loadingPopular ? (
                                 <GameGridSkeleton/>
+                            ) : popularError ? (
+                                <p className="text-[13px] text-foreground/50 py-4">
+                                    Couldn't load games right now —{" "}
+                                    <Link href="/search"
+                                          className="text-brand-purple hover:text-foreground/80 transition-colors">
+                                        browse all games
+                                    </Link>
+                                </p>
                             ) : (
-                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                                <div
+                                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                                     {popularGames.map((game) => (
                                         <AutoImportGameCard key={game.id} game={game}/>
                                     ))}
@@ -415,8 +379,17 @@ export default function HomePage() {
                             <SectionHeader title="New releases" href="/search?sort=recent"/>
                             {loadingRecent ? (
                                 <GameGridSkeleton/>
+                            ) : recentError ? (
+                                <p className="text-[13px] text-foreground/50 py-4">
+                                    Couldn't load games right now —{" "}
+                                    <Link href="/search"
+                                          className="text-brand-purple hover:text-foreground/80 transition-colors">
+                                        browse all games
+                                    </Link>
+                                </p>
                             ) : (
-                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                                <div
+                                    className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                                     {recentGames.map((game) => (
                                         <AutoImportGameCard key={game.id} game={game}/>
                                     ))}
@@ -431,19 +404,26 @@ export default function HomePage() {
                             <SectionHeader title="Friend activity"/>
                             <div className="bg-card border border-brand-purple/15 rounded-lg px-4 py-2">
                                 {loadingActivity ? (
-                                    <div className="space-y-3 py-2">
+                                    <div
+                                        role="status"
+                                        aria-label="Loading activity"
+                                        className="space-y-3 py-2"
+                                    >
                                         {Array.from({length: 4}).map((_, i) => (
-                                            <div key={i} className="h-8 rounded bg-brand-purple/10 animate-pulse"/>
+                                            <div key={i}
+                                                 className="h-8 rounded bg-brand-purple/10 animate-pulse"/>
                                         ))}
                                     </div>
                                 ) : activity.length > 0 ? (
-                                    activity.map((event) => (
-                                        <ActivityItem key={event.id} event={event}/>
-                                    ))
+                                    <ul className="list-none m-0 p-0">
+                                        {activity.map((event) => (
+                                            <ActivityItem key={event.id} event={event}/>
+                                        ))}
+                                    </ul>
                                 ) : (
                                     <div className="py-8 text-center">
                                         <Gamepad2 className="h-6 w-6 text-foreground/20 mx-auto mb-3"/>
-                                        <p className="text-[12px] text-foreground/30 leading-relaxed">
+                                        <p className="text-[12px] text-foreground/50 leading-relaxed">
                                             No activity yet.
                                             <br/>
                                             Follow other players to see their updates here.
@@ -467,7 +447,7 @@ export default function HomePage() {
                                             <p className="text-[12px] font-medium text-foreground/70 mb-1">
                                                 Connect Steam
                                             </p>
-                                            <p className="text-[11px] text-foreground/35 leading-relaxed mb-3">
+                                            <p className="text-[11px] text-foreground/50 leading-relaxed mb-3">
                                                 Sync your library, playtime, and achievements automatically.
                                             </p>
                                             <Link

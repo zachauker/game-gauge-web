@@ -111,3 +111,15 @@
         @apply bg-background text-foreground;
     }
 }
+
+@layer utilities {
+    /* Hides scrollbar visually while keeping scroll functionality.
+       Used on horizontal game rows (similar games, etc.) */
+    .scrollbar-none {
+        scrollbar-width: none;       /* Firefox */
+        -ms-overflow-style: none;    /* IE/Edge */
+    }
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;               /* Chrome/Safari */
+    }
+}
