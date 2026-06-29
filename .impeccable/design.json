@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-12T00:00:00Z",
+  "title": "Design System: Game Gauge",
+  "extensions": {
+    "colorMeta": {
+      "deep-ink":        { "role": "neutral",   "displayName": "Deep Ink",       "canonical": "#090B11", "tonalRamp": ["#090B11","#161A27","#212531","#2E3450","#424D72","#5C6894","#7E92CE","#A4B3DE","#CAD2EE","#EDF0FA"] },
+      "surface-card":    { "role": "neutral",   "displayName": "Surface Card",   "canonical": "#161A27", "tonalRamp": ["#090B11","#161A27","#212531","#2E3450","#424D72","#5C6894","#7E92CE","#A4B3DE","#CAD2EE","#EDF0FA"] },
+      "surface-muted":   { "role": "neutral",   "displayName": "Surface Muted",  "canonical": "#212531", "tonalRamp": ["#090B11","#161A27","#212531","#2E3450","#424D72","#5C6894","#7E92CE","#A4B3DE","#CAD2EE","#EDF0FA"] },
+      "border-subtle":   { "role": "neutral",   "displayName": "Border Subtle",  "canonical": "#242B42", "tonalRamp": ["#090B11","#161A27","#212531","#2E3450","#424D72","#5C6894","#7E92CE","#A4B3DE","#CAD2EE","#EDF0FA"] },
+      "brand-purple":    { "role": "primary",   "displayName": "Brand Purple",   "canonical": "#4D4075", "tonalRamp": ["#1B1529","#2A2140","#3D3361","#4D4075","#6358A8","#7E92CE","#9BA8D8","#BAC3E5","#D9DDF2","#F2F3FB"] },
+      "primary-purple":  { "role": "primary",   "displayName": "Primary Purple", "canonical": "#7E92CE", "tonalRamp": ["#1B1529","#2A2140","#3D3361","#4D4075","#6358A8","#7E92CE","#9BA8D8","#BAC3E5","#D9DDF2","#F2F3FB"] },
+      "score-amber":     { "role": "secondary", "displayName": "Score Amber",    "canonical": "#FBB94B", "tonalRamp": ["#5C3C00","#8A5800","#B57800","#DA9A10","#F5AF2E","#FBB94B","#FCC96F","#FDD898","#FEE9C0","#FFF6E5"] },
+      "social-rose":     { "role": "tertiary",  "displayName": "Social Rose",    "canonical": "#F170A9", "tonalRamp": ["#5C0029","#8A0040","#B3005C","#D4007A","#EC3A95","#F170A9","#F595BD","#F9B9D1","#FCDCE8","#FEF2F7"] },
+      "progress-teal":   { "role": "tertiary",  "displayName": "Progress Teal",  "canonical": "#6AC8CA", "tonalRamp": ["#0A3B3C","#125758","#1E7E80","#2FA4A6","#4CBABC","#6AC8CA","#90D5D7","#B4E3E4","#D6F0F1","#EEF9F9"] },
+      "destructive-red": { "role": "tertiary",  "displayName": "Destructive Red","canonical": "#E30613", "tonalRamp": ["#4D0006","#780009","#A3000D","#CC0010","#E30613","#F23046","#F76577","#FAA0AA","#FCD3D7","#FEECED"] },
+      "muted-slate":     { "role": "neutral",   "displayName": "Muted Slate",    "canonical": "#4E5558", "tonalRamp": ["#1A1D1E","#282C2E","#363B3D","#454A4C","#4E5558","#717879","#969B9D","#BABDBF","#DBDDDE","#F2F3F3"] },
+      "foreground-blush":{ "role": "neutral",   "displayName": "Foreground Blush","canonical": "#FEF3F9","tonalRamp": ["#4D0036","#7A0057","#A80078","#D2009A","#F020BF","#F870D5","#FAA5E3","#FCCBEe","#FDEAF6","#FEF3F9"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display / Wordmark", "purpose": "Logo wordmark only ('Game·Gauge' in the navbar). Never used in UI copy, headings, or buttons." },
+      "body":    { "displayName": "Body / UI",         "purpose": "All UI text: labels, nav items, descriptions, review content, buttons, form fields." },
+      "label":   { "displayName": "Label / Meta",      "purpose": "Compact metadata: timestamps, badges, platform abbreviations, section markers when earned." }
+    },
+    "shadows": [
+      {
+        "name": "scroll-nav",
+        "value": "0 1px 12px 0 rgba(77, 64, 117, 0.2)",
+        "purpose": "Applied to the sticky navbar only on scroll (user-triggered state, not ambient decoration). The one structural shadow in the system."
+      }
+    ],
+    "motion": [
+      { "name": "ease-state",   "value": "150ms ease-out", "purpose": "Button hover/active, border-color transitions, opacity shifts — instant feedback." },
+      { "name": "ease-enter",   "value": "200ms ease-out", "purpose": "Card hover (border shift), nav scroll-shadow, overlay appearances." },
+      { "name": "ease-cover",   "value": "300ms ease-out", "purpose": "Game cover image scale on hover — the slowest intentional motion in the system." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main action button. Purple fill, blush text, 6px radius. Used for sign-up, search submit, primary form actions.",
+      "html": "<button class=\"ds-btn-primary\">Sign up</button>",
+      "css": ".ds-btn-primary { background: #7E92CE; color: #FEF3F9; font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 500; padding: 6px 16px; border-radius: 6px; border: none; cursor: pointer; transition: background 150ms ease-out, opacity 150ms ease-out; } .ds-btn-primary:hover { background: #4D4075; } .ds-btn-primary:focus-visible { outline: 2px solid rgba(126, 146, 206, 0.6); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost / Text Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action, text-link style. No background, foreground text at reduced opacity.",
+      "html": "<button class=\"ds-btn-ghost\">Sign in</button>",
+      "css": ".ds-btn-ghost { background: transparent; color: rgba(254, 243, 249, 0.5); font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 400; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; transition: color 150ms ease-out; } .ds-btn-ghost:hover { color: rgba(254, 243, 249, 0.8); } .ds-btn-ghost:focus-visible { outline: 2px solid rgba(126, 146, 206, 0.6); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card Container",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Base surface for elevated content: stat cards, activity containers, settings panels. Purple-tinted border at low opacity.",
+      "html": "<div class=\"ds-card\"><p style=\"color: rgba(254,243,249,0.5); font-size: 12px; margin: 0;\">Card content</p></div>",
+      "css": ".ds-card { background: #161A27; border: 1px solid rgba(77, 64, 117, 0.15); border-radius: 8px; padding: 16px; transition: border-color 200ms ease-out; } .ds-card:hover { border-color: rgba(77, 64, 117, 0.50); }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Text input with inline search icon. Purple-tinted border, muted background.",
+      "html": "<div class=\"ds-input-wrap\"><svg class=\"ds-input-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.35-4.35\"/></svg><input class=\"ds-input\" type=\"text\" placeholder=\"Search for a game…\" /></div>",
+      "css": ".ds-input-wrap { display: flex; align-items: center; gap: 10px; background: rgba(77,64,117,0.10); border: 1px solid rgba(77,64,117,0.25); border-radius: 8px; padding: 10px 14px; transition: border-color 200ms ease-out; } .ds-input-wrap:focus-within { border-color: rgba(77,64,117,0.60); } .ds-input-icon { color: rgba(254,243,249,0.30); flex-shrink: 0; } .ds-input { background: transparent; border: none; outline: none; color: #FEF3F9; font-family: Inter, system-ui, sans-serif; font-size: 14px; width: 100%; } .ds-input::placeholder { color: rgba(254,243,249,0.25); }"
+    },
+    {
+      "name": "Game Cover Card",
+      "kind": "card",
+      "refersTo": "game-cover-card",
+      "description": "Portrait poster card (3:4 ratio). Cover art fills the frame; title/meta pinned to bottom under a gradient overlay. Rating badge in top-right corner.",
+      "html": "<div class=\"ds-game-card\"><div class=\"ds-game-cover\"><div class=\"ds-game-overlay\"></div><div class=\"ds-game-badge\"><svg width=\"10\" height=\"10\" viewBox=\"0 0 24 24\" fill=\"#FBB94B\" stroke=\"none\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg><span class=\"ds-game-score\">8.4</span></div><div class=\"ds-game-meta\"><p class=\"ds-game-title\">Shadow of the Colossus</p><p class=\"ds-game-submeta\">2005 · PS2</p></div></div></div>",
+      "css": ".ds-game-card { border-radius: 8px; overflow: hidden; background: #161A27; border: 1px solid rgba(77,64,117,0.20); transition: border-color 200ms ease-out; cursor: pointer; } .ds-game-card:hover { border-color: rgba(77,64,117,0.50); } .ds-game-cover { position: relative; aspect-ratio: 3/4; background: rgba(77,64,117,0.15); overflow: hidden; } .ds-game-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.10) 50%, transparent 100%); opacity: 0.8; transition: opacity 200ms ease-out; } .ds-game-card:hover .ds-game-overlay { opacity: 1.0; } .ds-game-badge { position: absolute; top: 8px; right: 8px; display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.60); backdrop-filter: blur(4px); border-radius: 4px; padding: 3px 6px; } .ds-game-score { font-family: Inter, system-ui, sans-serif; font-size: 11px; font-weight: 500; color: #FBB94B; line-height: 1; } .ds-game-meta { position: absolute; bottom: 0; left: 0; right: 0; padding: 6px 12px 12px; } .ds-game-title { font-family: Inter, system-ui, sans-serif; font-size: 13px; font-weight: 500; color: #ffffff; line-height: 1.3; margin: 0 0 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } .ds-game-submeta { font-family: Inter, system-ui, sans-serif; font-size: 11px; color: rgba(255,255,255,0.50); margin: 0; }"
+    },
+    {
+      "name": "Activity Item",
+      "kind": "custom",
+      "description": "Compact row for social activity feed: avatar initials + action description + timestamp. Amber highlights scores.",
+      "html": "<div class=\"ds-activity\"><div class=\"ds-activity-avatar\">ZA</div><div class=\"ds-activity-body\"><span class=\"ds-activity-user\">zachauker</span> rated <span class=\"ds-activity-game\">Celeste</span> <span class=\"ds-activity-score\">9/10</span></div><span class=\"ds-activity-time\">2h ago</span></div>",
+      "css": ".ds-activity { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(77,64,117,0.10); } .ds-activity:last-child { border-bottom: none; } .ds-activity-avatar { width: 28px; height: 28px; border-radius: 50%; background: rgba(77,64,117,0.30); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: Inter, system-ui, sans-serif; font-size: 10px; font-weight: 500; color: rgba(254,243,249,0.60); } .ds-activity-body { flex: 1; min-width: 0; font-family: Inter, system-ui, sans-serif; font-size: 12px; color: rgba(254,243,249,0.50); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-activity-user { color: rgba(254,243,249,0.80); font-weight: 500; } .ds-activity-game { color: rgba(254,243,249,0.80); font-style: italic; } .ds-activity-score { color: #FBB94B; font-weight: 500; } .ds-activity-time { font-family: Inter, system-ui, sans-serif; font-size: 11px; color: rgba(254,243,249,0.25); flex-shrink: 0; }"
+    },
+    {
+      "name": "Navbar",
+      "kind": "nav",
+      "description": "Sticky top navigation. 56px tall, translucent dark bg with backdrop blur. Active link is amber; inactive is muted foreground.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-logo\" href=\"#\"><div class=\"ds-nav-logomark\"></div><span class=\"ds-nav-wordmark\">Game<span style=\"opacity:0.6\">Gauge</span></span></a><div class=\"ds-nav-links\"><a class=\"ds-nav-link ds-nav-link-active\" href=\"#\">Home</a><a class=\"ds-nav-link\" href=\"#\">Games</a><a class=\"ds-nav-link\" href=\"#\">Lists</a></div></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 24px; height: 56px; padding: 0 32px; background: rgba(9,11,17,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(77,64,117,0.20); position: sticky; top: 0; z-index: 50; } .ds-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; } .ds-nav-logomark { width: 32px; height: 32px; border-radius: 8px; background: #4D4075; flex-shrink: 0; } .ds-nav-wordmark { font-size: 17px; letter-spacing: 0.02em; color: #FEF3F9; font-family: sans-serif; } .ds-nav-links { display: flex; align-items: center; gap: 4px; } .ds-nav-link { font-family: Inter, system-ui, sans-serif; font-size: 13px; color: rgba(254,243,249,0.50); text-decoration: none; padding: 6px 12px; border-radius: 6px; transition: color 150ms ease-out; } .ds-nav-link:hover { color: rgba(254,243,249,0.80); } .ds-nav-link-active { color: #FBB94B; font-weight: 500; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Player's Journal",
+    "overview": "Game Gauge is a dark, personal, journal-like interface for the games you've played. The surface feels like a well-kept notebook: deep purple-navy backgrounds, purple-tinted borders at low opacity, and a single amber accent that carries the weight of scoring, greeting, and action. Game cover art does the visual work; the interface steps back so the games themselves fill the screen.\n\nThe emotional register is private and deliberate — closer to a shelf of annotated books than to a storefront or a social feed. Interactions are quiet: borders shift opacity on hover, surfaces layer tonally, and the amber score badge is the loudest thing on any card. Nothing shouts. The system earns attention by being useful, not by demanding it.\n\nThis system explicitly rejects: the loud headline energy of IGN and GameSpot, the transactional grid of the Steam store, the engagement-bait rhythms of generic social apps, and the overwrought gaming aesthetic of neon-on-pitch-black.",
+    "keyCharacteristics": [
+      "Dark-first by design — not because tools look dark, but because games are played in dim rooms at night",
+      "Single chromatic accent (amber) used only where it earns its place: scores, greetings, primary CTAs",
+      "Depth through tonal layering, never through shadows",
+      "Cover art as the hero — the UI is the frame, the games are the content",
+      "Consistent, predictable product vocabulary across every screen"
+    ],
+    "rules": [
+      { "name": "The Amber Signal Rule", "body": "Amber appears only where it earns its place: a score, a CTA, a greeting, an active nav item. Any use that is purely decorative is prohibited. If amber is more than 10% of a screen's surface area, something has been misused.", "section": "colors" },
+      { "name": "The Tinted Border Rule", "body": "Borders are not lines — they are the purple tint at reduced opacity. Use border-brand-purple/15 at rest, border-brand-purple/50 on hover/focus. Hard gray or white borders are foreign to this system.", "section": "colors" },
+      { "name": "The Flexing Fence Rule", "body": "Flexing Regular is the logo's voice, not the interface's. It never appears in labels, buttons, data tables, review text, or navigation items.", "section": "typography" },
+      { "name": "The Label Restraint Rule", "body": "Small uppercase tracked labels are a legitimate affordance — but only when the label carries information the heading alone cannot. One deliberate kicker is voice; a kicker above every section is scaffolding.", "section": "typography" },
+      { "name": "The Tonal Stacking Rule", "body": "If you reach for a shadow to separate two elements, you have missed a tonal layer. Add a surface step instead. Shadows in this system are state signals, not hierarchy signals.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use border-brand-purple/15 for card borders at rest and border-brand-purple/50 on hover/focus — never gray or white borders.",
+      "Do use amber (#FBB94B) exclusively for scores, primary CTAs, active nav links, and greeting kickers.",
+      "Do convey depth by adding a tonal layer rather than adding a shadow.",
+      "Do keep the Flexing display font inside the logo only.",
+      "Do use game cover art as the hero on grid and detail pages — the UI is the frame.",
+      "Do apply @media (prefers-reduced-motion: reduce) on all transitions.",
+      "Do target WCAG 2.1 AA: 4.5:1 for body text, 3:1 for large text and interactive components."
+    ],
+    "donts": [
+      "Don't add neon accents, pitch-black backgrounds (#000), aggressive typography, or dragon-logo energy.",
+      "Don't structure pages like IGN or GameSpot: flashy banner headlines, editorial hype copy, loud section dividers.",
+      "Don't introduce infinite-scroll feeds, engagement-bait notification badges, or algorithmic interruptions.",
+      "Don't replicate the Steam store's transactional, commerce-first layout.",
+      "Don't use border-left greater than 1px as a colored stripe on cards or callouts.",
+      "Don't apply gradient text (background-clip: text + gradient background).",
+      "Don't use glassmorphism as a default surface treatment.",
+      "Don't put uppercase tracked labels above every section by reflex.",
+      "Don't use box-shadow for ambient or structural depth."
+    ]
+  }
+}
