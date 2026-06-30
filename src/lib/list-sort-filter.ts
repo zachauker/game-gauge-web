@@ -57,8 +57,11 @@ export function sortListItems(
         const bScore = b.game?.ratings?.[0]?.score ?? 0;
         return (aScore - bScore) * dir;
       }
-      default:
+      default: {
+        // Exhaustiveness guard — TypeScript will narrow `sortBy` to `never` here
+        const _exhaustive: never = sortBy;
         return 0;
+      }
     }
   });
 }
