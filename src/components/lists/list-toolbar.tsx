@@ -61,6 +61,8 @@ function MultiSelectChip({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] border transition-colors ${
           selected.length > 0
             ? "border-brand-purple/50 bg-brand-purple/15 text-brand-purple"
@@ -138,6 +140,7 @@ export function ListToolbar({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search this list..."
+          aria-label="Search this list"
           className="w-full pl-8 pr-3 py-1.5 text-[12px] bg-background border border-brand-purple/20 rounded-md focus:outline-none focus:border-brand-purple/50 text-foreground placeholder:text-foreground/30"
         />
       </div>
