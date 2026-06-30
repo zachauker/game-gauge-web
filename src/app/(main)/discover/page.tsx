@@ -43,6 +43,8 @@ export default function DiscoverPage() {
 
   // showFlat: collapse to flat grid without needing filter chips to be active
   const [showFlat, setShowFlat] = useState(false);
+  // retryCount: incremented to re-trigger search effect after error
+  const [retryCount, setRetryCount] = useState(0);
 
   // Data state
   const [topRated, setTopRated] = useState<DBGame[]>([]);
@@ -134,7 +136,7 @@ export default function DiscoverPage() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [query, activeGenre, searchMode]);
+  }, [query, activeGenre, searchMode, retryCount]);
 
   const handleGenreChange = useCallback((genre: string | null) => {
     setActiveGenre(genre);
@@ -168,16 +170,19 @@ export default function DiscoverPage() {
   const seeAllTopRated = () => {
     setShowFlat(true);
     setActiveSort('top-rated');
+    setBrowsePage(1);
   };
 
   const seeAllTrending = () => {
     setShowFlat(true);
     setActiveSort('trending');
+    setBrowsePage(1);
   };
 
   const seeAllNew = () => {
     setShowFlat(true);
     setActiveSort('release-date');
+    setBrowsePage(1);
   };
 
   const resultLabel = searchMode
@@ -246,7 +251,7 @@ export default function DiscoverPage() {
               <p className="text-white/40 text-sm mb-3">Search failed. Please try again.</p>
               <button
                 type="button"
-                onClick={() => setQuery(q => q)} // re-triggers the effect
+                onClick={() => setRetryCount(c => c + 1)}
                 className="text-xs text-brand-purple hover:text-brand-purple-light"
               >
                 Try again
