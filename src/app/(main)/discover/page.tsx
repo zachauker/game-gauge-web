@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Search, X } from 'lucide-react';
 import {
   FilterChips,
@@ -31,7 +31,6 @@ const SORT_TO_API: Record<SortOption, { sortBy: string; sortOrder: string }> = {
 };
 
 export default function DiscoverPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // URL-driven state
