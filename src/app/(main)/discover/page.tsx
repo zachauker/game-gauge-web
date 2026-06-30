@@ -23,6 +23,7 @@ import {
 } from '@/lib/search';
 import { getIgdbGenreId } from '@/lib/igdb-genres';
 import { IGDBGame } from '@/lib/api';
+import { MainLayout } from '@/components/layout/main-layout';
 
 const SORT_TO_API: Record<SortOption, { sortBy: string; sortOrder: string }> = {
   'top-rated': { sortBy: 'averageRating', sortOrder: 'desc' },
@@ -201,6 +202,7 @@ function DiscoverContent() {
     : null;
 
   return (
+    <MainLayout>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
@@ -322,5 +324,6 @@ function DiscoverContent() {
         />
       )}
     </div>
+    </MainLayout>
   );
 }
