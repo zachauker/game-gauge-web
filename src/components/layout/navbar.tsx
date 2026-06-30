@@ -64,7 +64,7 @@ export function Navbar() {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(`/discover?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
       setSearchOpen(false);
     }
@@ -83,14 +83,14 @@ export function Navbar() {
   const navLinks = isAuthenticated
     ? [
         { href: "/", label: "Home" },
-        { href: "/search", label: "Games" },
+        { href: "/discover", label: "Games" },
         { href: "/lists", label: "Lists" },
         { href: "/journal", label: "Journal" },
         ...(hasSteam ? [{ href: "/steam/library", label: "Steam" }] : []),
       ]
     : [
         { href: "/", label: "Home" },
-        { href: "/search", label: "Browse Games" },
+        { href: "/discover", label: "Browse Games" },
       ];
 
   return (
