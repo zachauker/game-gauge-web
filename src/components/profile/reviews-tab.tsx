@@ -5,17 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Loader2 } from "lucide-react";
 import { fetchUserReviews, ProfileReviewItem } from "@/lib/profile";
-
-function timeAgo(dateString: string): string {
-  const diff = Date.now() - new Date(dateString).getTime();
-  const days = Math.floor(diff / 86_400_000);
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}y ago`;
-}
+import { timeAgo } from "@/lib/social";
 
 export function ReviewsTab({ username }: { username: string }) {
   const [items, setItems] = useState<ProfileReviewItem[]>([]);

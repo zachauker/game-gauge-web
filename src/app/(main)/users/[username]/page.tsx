@@ -80,22 +80,22 @@ export default function UserProfilePage() {
   useEffect(() => {
     setIsLoading(true);
     setError("");
-    Promise.all([
+    Promise.allSettled([
       api.get(`/users/${username}`),
       api.get(`/users/${username}/stats`),
-    ])
-      .then(([profileRes, statsRes]) => {
-        setProfile(profileRes.data.data);
-        setStats(statsRes.data.data);
-      })
-      .catch((err: unknown) => {
-        const msg =
-          (err as { response?: { data?: { error?: { message?: string } } } })
-            ?.response?.data?.error?.message ?? "Failed to load profile";
+    ]).then(([profileResult, statsResult]) => {
+      if (profileResult.status === "rejected") {
+        const err = profileResult.reason as { response?: { data?: { error?: { message?: string } } } };
+        const msg = err?.response?.data?.error?.message ?? "Failed to load profile";
         setError(msg);
         toast.error("Failed to load profile");
-      })
-      .finally(() => setIsLoading(false));
+      } else {
+        setProfile(profileResult.value.data.data);
+      }
+      if (statsResult.status === "fulfilled") {
+        setStats(statsResult.value.data.data);
+      }
+    }).finally(() => setIsLoading(false));
   }, [username]);
 
   if (isLoading) {
@@ -108,7 +108,7 @@ export default function UserProfilePage() {
     );
   }
 
-  if (error || !profile || !stats) {
+  if (error || !profile) {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 py-20 text-center">
@@ -140,19 +140,21 @@ export default function UserProfilePage() {
         <ProfileHeader
           profile={profile}
           isOwnProfile={isOwnProfile}
-          isFollowing={stats.isFollowing}
-          followerCount={stats.followerCount}
+          isFollowing={stats?.isFollowing ?? false}
+          followerCount={stats?.followerCount ?? 0}
         />
 
-        <ProfileStats
-          username={username}
-          totalRatings={stats.totalRatings}
-          totalReviews={stats.totalReviews}
-          averageRating={stats.averageRating}
-          publicListsCount={stats.publicListsCount}
-          followerCount={stats.followerCount}
-          followingCount={stats.followingCount}
-        />
+        {stats && (
+          <ProfileStats
+            username={username}
+            totalRatings={stats.totalRatings}
+            totalReviews={stats.totalReviews}
+            averageRating={stats.averageRating}
+            publicListsCount={stats.publicListsCount}
+            followerCount={stats.followerCount}
+            followingCount={stats.followingCount}
+          />
+        )}
 
         {/* Tabs */}
         <div className="flex items-center border-b border-brand-purple/15 mb-6">

@@ -6,7 +6,6 @@ import { MainLayout } from "@/components/layout/main-layout";
 import { FollowUserRow } from "@/components/profile/follow-user-row";
 import { useAuthStore } from "@/store/auth";
 import { getFollowing, FollowUser } from "@/lib/social";
-import { api } from "@/lib/api";
 import { ChevronLeft, Users, Loader2 } from "lucide-react";
 
 export default function FollowingPage() {
@@ -15,19 +14,11 @@ export default function FollowingPage() {
   const username = params.username as string;
   const { user: currentUser } = useAuthStore();
 
-  const [profileId, setProfileId] = useState<string | null>(null);
   const [following, setFollowing] = useState<FollowUser[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    api
-      .get(`/users/${username}`)
-      .then((res) => setProfileId(res.data.data.id))
-      .catch(() => router.back());
-  }, [username, router]);
 
   const loadPage = useCallback(
     async (pageNum: number) => {
@@ -64,7 +55,7 @@ export default function FollowingPage() {
     return () => observer.disconnect();
   }, [hasMore, loading, page, loadPage]);
 
-  const isOwnProfile = profileId != null && currentUser?.id === profileId;
+  const isOwnProfile = currentUser?.username === username;
 
   return (
     <MainLayout>

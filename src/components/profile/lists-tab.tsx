@@ -33,7 +33,8 @@ export function ListsTab({ userId }: { userId: string }) {
           ? result
           : result.data ?? [];
         setLists((prev) => (pageNum === 1 ? newLists : [...prev, ...newLists]));
-        setHasMore(result.hasMore ?? false);
+        const pagination = result.pagination as { page: number; totalPages: number } | undefined;
+        setHasMore(pagination != null ? pagination.page < pagination.totalPages : false);
         setPage(pageNum);
       } catch {
         // leave existing lists in place on error
