@@ -1,0 +1,76 @@
+<h2>What's the default landing view?</h2>
+<p class="subtitle">No search query, no filters active — what does the user see?</p>
+
+<div class="cards">
+
+  <!-- Option A: Curated rows -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f14;padding:14px;font-family:system-ui,sans-serif;">
+      <div style="background:#1a1a2e;border-radius:10px;padding:12px;">
+        <!-- Search + chips -->
+        <div style="background:#0f0f14;border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:6px 10px;margin-bottom:8px;color:rgba(255,255,255,0.2);font-size:12px;">🔍 Search games…</div>
+        <div style="display:flex;gap:5px;margin-bottom:12px;">
+          <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:20px;padding:2px 8px;font-size:10px;">Genre ▾</span>
+          <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:20px;padding:2px 8px;font-size:10px;">Platform ▾</span>
+          <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:20px;padding:2px 8px;font-size:10px;">Sort ▾</span>
+        </div>
+        <!-- Row 1 -->
+        <div style="color:rgba(255,255,255,0.5);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">⭐ Top Rated on Game Gauge</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px;">
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.15);border-radius:5px;border:1px solid rgba(245,158,11,0.2);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.1);border-radius:5px;border:1px solid rgba(245,158,11,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.1);border-radius:5px;border:1px solid rgba(245,158,11,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.1);border-radius:5px;border:1px solid rgba(245,158,11,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.08);border-radius:5px;border:1px solid rgba(245,158,11,0.12);"></div>
+        </div>
+        <!-- Row 2 -->
+        <div style="color:rgba(255,255,255,0.5);font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;">🔥 Trending This Week</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;">
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.12);border-radius:5px;border:1px solid rgba(139,92,246,0.18);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Curated rows</h3>
+      <p>Stacked named sections: Top Rated, Trending, New Releases. Filters collapse them into a single flat grid. Like a game store homepage.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Single flat grid -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f14;padding:14px;font-family:system-ui,sans-serif;">
+      <div style="background:#1a1a2e;border-radius:10px;padding:12px;">
+        <!-- Search + chips -->
+        <div style="background:#0f0f14;border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:6px 10px;margin-bottom:8px;color:rgba(255,255,255,0.2);font-size:12px;">🔍 Search games…</div>
+        <div style="display:flex;gap:5px;margin-bottom:12px;">
+          <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:20px;padding:2px 8px;font-size:10px;">Genre ▾</span>
+          <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:#a78bfa;border-radius:20px;padding:2px 8px;font-size:10px;">Platform ▾</span>
+          <span style="background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;border-radius:20px;padding:2px 8px;font-size:10px;">Sort: Top rated ▾</span>
+        </div>
+        <!-- Flat grid with result count -->
+        <div style="color:rgba(255,255,255,0.3);font-size:10px;margin-bottom:6px;">Showing 248 games · sorted by rating</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;">
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.15);border-radius:5px;border:1px solid rgba(245,158,11,0.2);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.12);border-radius:5px;border:1px solid rgba(139,92,246,0.18);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.07);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.07);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Flat grid, sorted by rating</h3>
+      <p>Default view is simply the full DB sorted by community rating. No sections — just one continuous grid you can filter and re-sort. Clean and direct.</p>
+    </div>
+  </div>
+
+</div>

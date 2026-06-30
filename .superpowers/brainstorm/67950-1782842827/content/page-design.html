@@ -1,0 +1,163 @@
+<h2>Unified Browse & Search — Page Design</h2>
+<p class="subtitle">Section 1: Overall page structure. Left = browse mode (default). Right = search mode (after typing).</p>
+
+<div class="split">
+
+  <!-- BROWSE MODE -->
+  <div class="mockup">
+    <div class="mockup-header">Browse mode (default — no query)</div>
+    <div class="mockup-body" style="background:#0d0d14;padding:16px;font-family:system-ui,sans-serif;min-height:520px;">
+
+      <!-- Page header -->
+      <div style="margin-bottom:12px;">
+        <div style="color:rgba(255,255,255,0.25);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">Discover</div>
+        <div style="color:#fff;font-size:16px;font-weight:500;margin-bottom:2px;">Games</div>
+        <div style="color:rgba(255,255,255,0.35);font-size:11px;">200,000+ titles · powered by IGDB</div>
+      </div>
+
+      <!-- Search bar -->
+      <div style="display:flex;align-items:center;gap:8px;background:#1a1a2e;border:1px solid rgba(139,92,246,0.3);border-radius:10px;padding:8px 12px;margin-bottom:10px;">
+        <span style="color:rgba(255,255,255,0.25);font-size:12px;">🔍</span>
+        <span style="color:rgba(255,255,255,0.2);font-size:12px;flex:1;">Search by title, developer…</span>
+      </div>
+
+      <!-- Filter chips -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+        <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.35);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:10px;cursor:pointer;">Genre ▾</span>
+        <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.35);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:10px;cursor:pointer;">Platform ▾</span>
+        <span style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.35);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:10px;cursor:pointer;">Sort: Top Rated ▾</span>
+      </div>
+
+      <!-- Section: Top Rated -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:rgba(255,255,255,0.45);font-size:9px;text-transform:uppercase;letter-spacing:.08em;">⭐ Top Rated on Game Gauge</span>
+          <span style="color:rgba(139,92,246,0.6);font-size:9px;">See all →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;">
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.18);border-radius:5px;border:1px solid rgba(245,158,11,0.25);position:relative;">
+            <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.7);border-radius:3px;padding:1px 4px;font-size:8px;color:#fbbf24;">★ 9.1</div>
+          </div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.12);border-radius:5px;border:1px solid rgba(245,158,11,0.18);position:relative;">
+            <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.7);border-radius:3px;padding:1px 4px;font-size:8px;color:#fbbf24;">★ 8.9</div>
+          </div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.1);border-radius:5px;border:1px solid rgba(245,158,11,0.15);position:relative;">
+            <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.7);border-radius:3px;padding:1px 4px;font-size:8px;color:#fbbf24;">★ 8.7</div>
+          </div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.09);border-radius:5px;border:1px solid rgba(245,158,11,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.08);border-radius:5px;border:1px solid rgba(245,158,11,0.1);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(245,158,11,0.06);border-radius:5px;border:1px solid rgba(245,158,11,0.08);"></div>
+        </div>
+      </div>
+
+      <!-- Section: Trending -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:rgba(255,255,255,0.45);font-size:9px;text-transform:uppercase;letter-spacing:.08em;">🔥 Trending This Week</span>
+          <span style="color:rgba(139,92,246,0.6);font-size:9px;">See all →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;">
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.15);border-radius:5px;border:1px solid rgba(139,92,246,0.22);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.12);border-radius:5px;border:1px solid rgba(139,92,246,0.18);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:5px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.09);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.06);border-radius:5px;border:1px solid rgba(139,92,246,0.08);"></div>
+        </div>
+      </div>
+
+      <!-- Section: New Releases -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:rgba(255,255,255,0.45);font-size:9px;text-transform:uppercase;letter-spacing:.08em;">🆕 New Releases</span>
+          <span style="color:rgba(139,92,246,0.6);font-size:9px;">See all →</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;">
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.12);border-radius:5px;border:1px solid rgba(99,182,120,0.18);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.1);border-radius:5px;border:1px solid rgba(99,182,120,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.09);border-radius:5px;border:1px solid rgba(99,182,120,0.12);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.08);border-radius:5px;border:1px solid rgba(99,182,120,0.1);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.07);border-radius:5px;border:1px solid rgba(99,182,120,0.09);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(99,182,120,0.06);border-radius:5px;border:1px solid rgba(99,182,120,0.08);"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SEARCH MODE -->
+  <div class="mockup">
+    <div class="mockup-header">Search mode (query active → IGDB results)</div>
+    <div class="mockup-body" style="background:#0d0d14;padding:16px;font-family:system-ui,sans-serif;min-height:520px;">
+
+      <!-- Page header -->
+      <div style="margin-bottom:12px;">
+        <div style="color:rgba(255,255,255,0.25);font-size:9px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;">Discover</div>
+        <div style="color:#fff;font-size:16px;font-weight:500;margin-bottom:2px;">Games</div>
+        <div style="color:rgba(255,255,255,0.35);font-size:11px;">200,000+ titles · powered by IGDB</div>
+      </div>
+
+      <!-- Search bar (active) -->
+      <div style="display:flex;align-items:center;gap:8px;background:#1a1a2e;border:1px solid rgba(139,92,246,0.6);border-radius:10px;padding:8px 12px;margin-bottom:10px;">
+        <span style="color:rgba(139,92,246,0.8);font-size:12px;">🔍</span>
+        <span style="color:#e0e0ff;font-size:12px;flex:1;">witcher</span>
+        <span style="color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;">✕</span>
+      </div>
+
+      <!-- Filter chips — genre chip stays active, platform greyed out -->
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
+        <span style="background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.45);color:#fbbf24;border-radius:20px;padding:3px 10px;font-size:10px;">RPG ×</span>
+        <span style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);color:rgba(167,139,250,0.4);border-radius:20px;padding:3px 10px;font-size:10px;cursor:not-allowed;" title="Platform filter not available in search mode">Platform ▾</span>
+        <span style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);color:rgba(167,139,250,0.4);border-radius:20px;padding:3px 10px;font-size:10px;cursor:not-allowed;">Sort ▾</span>
+      </div>
+
+      <!-- Result context -->
+      <div style="color:rgba(255,255,255,0.3);font-size:10px;margin-bottom:10px;">
+        18 results for "witcher" in RPG · via IGDB
+      </div>
+
+      <!-- Flat result grid (IGDB) with community badges -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;">
+        <!-- Has community data -->
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.15);border-radius:5px;border:1px solid rgba(139,92,246,0.3);position:relative;">
+          <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.75);border-radius:3px;padding:1px 4px;font-size:8px;color:#fbbf24;">★ 9.2</div>
+        </div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.13);border-radius:5px;border:1px solid rgba(139,92,246,0.25);position:relative;">
+          <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.75);border-radius:3px;padding:1px 4px;font-size:8px;color:#fbbf24;">★ 8.8</div>
+        </div>
+        <!-- No community data yet -->
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.08);border-radius:5px;border:1px solid rgba(139,92,246,0.15);position:relative;">
+          <div style="position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.6);border-radius:3px;padding:1px 4px;font-size:8px;color:rgba(255,255,255,0.3);">+ add</div>
+        </div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.07);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.07);border-radius:5px;border:1px solid rgba(139,92,246,0.12);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.06);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.06);border-radius:5px;border:1px solid rgba(139,92,246,0.1);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.05);border-radius:5px;border:1px solid rgba(139,92,246,0.08);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.05);border-radius:5px;border:1px solid rgba(139,92,246,0.08);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.05);border-radius:5px;border:1px solid rgba(139,92,246,0.08);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.04);border-radius:5px;border:1px solid rgba(139,92,246,0.07);"></div>
+        <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.04);border-radius:5px;border:1px solid rgba(139,92,246,0.07);"></div>
+      </div>
+
+      <!-- Note -->
+      <div style="margin-top:12px;padding:8px 10px;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.15);border-radius:6px;">
+        <span style="color:rgba(255,255,255,0.3);font-size:9px;">★ = rated by Game Gauge community · others can be added to your library</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="section" style="margin-top:20px;">
+  <h3>Key behaviour notes</h3>
+  <ul>
+    <li><strong>Genre chip carries through to IGDB search</strong> — e.g. "RPG" + "witcher" filters IGDB results to RPG games</li>
+    <li><strong>Platform &amp; Sort chips are disabled in search mode</strong> — greyed out with a tooltip. IGDB search is relevance-ordered.</li>
+    <li><strong>Curated rows disappear when search is active</strong> — replaced by a flat IGDB result grid</li>
+    <li><strong>Community ratings overlay</strong> shown on cards already in your DB; others show a subtle "+ add" affordance</li>
+    <li><strong>/browse and /search routes retire</strong> — both redirect to /games (or /discover)</li>
+    <li><strong>Genre browse (/browse/genre/:genre) retires</strong> — clicking "RPG" genre chip on the unified page is equivalent</li>
+  </ul>
+</div>

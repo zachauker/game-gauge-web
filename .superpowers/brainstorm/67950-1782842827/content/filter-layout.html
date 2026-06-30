@@ -1,0 +1,108 @@
+<h2>How should filters be presented?</h2>
+<p class="subtitle">This sets the overall shape of the unified search + browse page</p>
+
+<div class="cards">
+
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f14;padding:16px;font-family:system-ui,sans-serif;">
+      <div style="background:#1a1a2e;border-radius:10px;padding:12px;">
+        <!-- Search bar -->
+        <div style="display:flex;align-items:center;gap:8px;background:#0f0f14;border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+          <span style="color:rgba(255,255,255,0.3);font-size:13px;">🔍</span>
+          <span style="color:rgba(255,255,255,0.25);font-size:13px;">Search games…</span>
+        </div>
+        <!-- Filter chips row -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          <span style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:11px;">All genres ▾</span>
+          <span style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:11px;">All platforms ▾</span>
+          <span style="background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.4);color:#a78bfa;border-radius:20px;padding:3px 10px;font-size:11px;">Sort: Top rated ▾</span>
+          <span style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#fbbf24;border-radius:20px;padding:3px 10px;font-size:11px;">RPG ×</span>
+        </div>
+        <!-- Game grid -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Filter chips row</h3>
+      <p>Search bar + pill/chip dropdowns above the grid. Compact, everything visible at once. Feels like Letterboxd or Spotify.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f14;padding:16px;font-family:system-ui,sans-serif;">
+      <div style="background:#1a1a2e;border-radius:10px;padding:12px;">
+        <!-- Search bar -->
+        <div style="display:flex;align-items:center;gap:8px;background:#0f0f14;border:1px solid rgba(139,92,246,0.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+          <span style="color:rgba(255,255,255,0.3);font-size:13px;">🔍</span>
+          <span style="color:rgba(255,255,255,0.25);font-size:13px;">Search games…</span>
+        </div>
+        <!-- Two-col layout -->
+        <div style="display:flex;gap:10px;">
+          <!-- Sidebar -->
+          <div style="width:80px;flex-shrink:0;background:#0f0f14;border-radius:6px;border:1px solid rgba(139,92,246,0.15);padding:8px;">
+            <div style="color:rgba(255,255,255,0.3);font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Genre</div>
+            <div style="color:#a78bfa;font-size:11px;margin-bottom:3px;">RPG ✓</div>
+            <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-bottom:3px;">Action</div>
+            <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-bottom:8px;">Strategy</div>
+            <div style="color:rgba(255,255,255,0.3);font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Platform</div>
+            <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-bottom:3px;">PC</div>
+            <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-bottom:3px;">PS5</div>
+            <div style="color:rgba(255,255,255,0.4);font-size:11px;">Switch</div>
+          </div>
+          <!-- Grid -->
+          <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+            <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+            <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+            <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+            <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Left sidebar filters</h3>
+      <p>Persistent filter panel on the left with checkboxes for genre/platform. More game catalogue feel (like Steam or GOG).</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0f0f14;padding:16px;font-family:system-ui,sans-serif;">
+      <div style="background:#1a1a2e;border-radius:10px;padding:12px;">
+        <!-- Tabs at top -->
+        <div style="display:flex;gap:0;border-bottom:1px solid rgba(139,92,246,0.15);margin-bottom:10px;">
+          <span style="color:#fbbf24;border-bottom:2px solid #fbbf24;padding:4px 10px;font-size:12px;margin-bottom:-1px;">Top Rated</span>
+          <span style="color:rgba(255,255,255,0.3);padding:4px 10px;font-size:12px;">Trending</span>
+          <span style="color:rgba(255,255,255,0.3);padding:4px 10px;font-size:12px;">New Releases</span>
+          <span style="color:rgba(255,255,255,0.3);padding:4px 10px;font-size:12px;">Search</span>
+        </div>
+        <!-- Inline row: genre + platform dropdowns + grid -->
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;">
+          <span style="color:rgba(255,255,255,0.4);font-size:11px;">Filter:</span>
+          <span style="background:#0f0f14;border:1px solid rgba(139,92,246,0.25);color:#a78bfa;border-radius:6px;padding:3px 8px;font-size:11px;">Genre ▾</span>
+          <span style="background:#0f0f14;border:1px solid rgba(139,92,246,0.25);color:rgba(255,255,255,0.4);border-radius:6px;padding:3px 8px;font-size:11px;">Platform ▾</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+          <div style="aspect-ratio:3/4;background:rgba(139,92,246,0.1);border-radius:6px;border:1px solid rgba(139,92,246,0.15);"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Tabs + inline dropdowns</h3>
+      <p>Curated tabs (Top Rated, Trending, etc.) with genre/platform dropdowns that filter the active tab. Familiar, low-friction.</p>
+    </div>
+  </div>
+
+</div>
