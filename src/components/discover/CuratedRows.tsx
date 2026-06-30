@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { DBGame } from '@/lib/search';
 import { IGDBGame } from '@/lib/api';
 import { GameGrid } from './GameGrid';
