@@ -175,6 +175,9 @@ export interface Review {
   };
 }
 
+export type ListSortBy = "custom" | "title" | "dateAdded" | "progress" | "releaseDate" | "rating";
+export type ListSortDir = "asc" | "desc";
+
 // List types
 export interface GameList {
   id: string;
@@ -183,6 +186,8 @@ export interface GameList {
   isPublic: boolean;
   isDefault: boolean;
   listType: ListType;
+  sortBy: ListSortBy;
+  sortDir: ListSortDir;
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -215,7 +220,9 @@ export interface GameListItem {
     slug: string;
     coverImage?: string;
     releaseDate?: string;
+    genres?: string[];
     platforms?: string[];
+    ratings?: { score: number }[];
   };
 }
 
