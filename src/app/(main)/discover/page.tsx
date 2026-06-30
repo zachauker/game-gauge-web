@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, X } from 'lucide-react';
@@ -31,6 +32,14 @@ const SORT_TO_API: Record<SortOption, { sortBy: string; sortOrder: string }> = {
 };
 
 export default function DiscoverPage() {
+  return (
+    <Suspense>
+      <DiscoverContent />
+    </Suspense>
+  );
+}
+
+function DiscoverContent() {
   const searchParams = useSearchParams();
 
   // URL-driven state
