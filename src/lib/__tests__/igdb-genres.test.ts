@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { getIgdbGenreId, IGDB_GENRE_IDS } from '../igdb-genres';
 
 describe('getIgdbGenreId', () => {
