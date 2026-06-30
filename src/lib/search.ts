@@ -5,6 +5,27 @@ export interface SearchFilters {
   sort?: 'relevance' | 'rating' | 'date';
   page?: number;
   limit?: number;
+  genreId?: number;
+}
+
+export interface CommunityData {
+  igdbId: number;
+  slug: string;
+  averageRating: number;
+  ratingCount: number;
+}
+
+export interface DBGame {
+  id: string;
+  title: string;
+  slug: string;
+  igdbId?: number;
+  coverImage?: string;
+  genres: string[];
+  platforms: string[];
+  releaseDate?: string;
+  averageRating?: number;
+  ratingCount?: number;
 }
 
 export interface SearchResponse {
@@ -16,13 +37,14 @@ export interface SearchResponse {
  * Search IGDB for games
  */
 export async function searchIGDB(filters: SearchFilters): Promise<SearchResponse> {
-  const { query = '', page = 1, limit = 20 } = filters;
-  
+  const { query = '', page = 1, limit = 20, genreId } = filters;
+
   try {
     const response = await api.get('/igdb/search', {
       params: {
         q: query,
         limit,
+        ...(genreId !== undefined && { genreId }),
       },
     });
 
@@ -89,6 +111,87 @@ export async function importGame(igdbId: number): Promise<Game | null> {
   } catch (error) {
     console.error('Import game error:', error);
     return null;
+  }
+}
+
+/**
+ * Fetch community rating data for a batch of IGDB IDs
+ * Used to overlay community ratings on IGDB search results
+ * Returns a Map for O(1) lookup by igdbId
+ */
+export async function getBatchCommunityData(
+  igdbIds: number[]
+): Promise<Map<number, CommunityData>> {
+  if (igdbIds.length === 0) return new Map();
+  try {
+    const response = await api.get('/games/by-igdb-ids', {
+      params: { ids: igdbIds.join(',') },
+    });
+    const items: CommunityData[] = response.data.data || [];
+    return new Map(items.map(item => [item.igdbId, item]));
+  } catch (error) {
+    console.error('Batch community data error:', error);
+    return new Map();
+  }
+}
+
+/**
+ * Get top-rated games from the Game Gauge community database
+ */
+export async function getTopRatedGames(
+  limit: number = 6,
+  genre?: string
+): Promise<DBGame[]> {
+  try {
+    const response = await api.get('/games/top-rated', {
+      params: { limit, ...(genre && { genre }) },
+    });
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Get top-rated games error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get trending games from the Game Gauge community database
+ */
+export async function getTrendingGames(
+  limit: number = 6,
+  genre?: string
+): Promise<DBGame[]> {
+  try {
+    const response = await api.get('/games/trending', {
+      params: { limit, ...(genre && { genre }) },
+    });
+    return response.data.data || [];
+  } catch (error) {
+    console.error('Get trending games error:', error);
+    return [];
+  }
+}
+
+/**
+ * Get DB games with optional filtering (for the flat grid browse mode)
+ */
+export async function getDBGames(params: {
+  genre?: string;
+  platform?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ games: DBGame[]; total: number; totalPages: number }> {
+  try {
+    const response = await api.get('/games', { params });
+    return {
+      games: response.data.data || [],
+      total: response.data.pagination?.total || 0,
+      totalPages: response.data.pagination?.totalPages || 0,
+    };
+  } catch (error) {
+    console.error('Get DB games error:', error);
+    return { games: [], total: 0, totalPages: 0 };
   }
 }
 
