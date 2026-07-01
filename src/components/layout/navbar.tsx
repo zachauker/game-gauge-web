@@ -26,6 +26,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
+import { MessagesNavIcon } from "@/components/messages/messages-nav-icon";
 
 export function Navbar() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
@@ -168,8 +169,13 @@ export function Navbar() {
                 <kbd className="hidden lg:inline-block text-[10px] bg-brand-purple/20 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
               </button>
 
-              {/* Notification bell — authenticated only */}
-              {isAuthenticated && user && <NotificationBell />}
+              {/* Notification bell + messages — authenticated only */}
+              {isAuthenticated && user && (
+                <>
+                  <NotificationBell />
+                  <MessagesNavIcon />
+                </>
+              )}
 
               {/* Authenticated user menu */}
               {isAuthenticated && user ? (
