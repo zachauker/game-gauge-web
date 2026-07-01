@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,9 +13,11 @@ import {
   UserPlus,
   List,
   ExternalLink,
+  Share2,
 } from "lucide-react";
 import { ActivityEvent, getEventLink, getActivityDescription, timeAgo } from "@/lib/social";
 import { EventInteractions } from "@/components/social/event-interactions";
+import { ShareToDialog } from "@/components/messages/share-to-dialog";
 
 // ─── Event type display config ────────────────────────────────────────────────
 // Icon colours mapped to brand tokens for visual consistency with the rest of
@@ -50,6 +53,7 @@ export function ActivityEventCard({
   const followedUsername = event.meta?.username as string | undefined;
   const actorLabel       = isOwnActivity ? "You" : event.user.username;
   const description      = getActivityDescription(event);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   return (
     <article className="rounded-lg border border-brand-purple/15 bg-card p-3 hover:border-brand-purple/30 transition-colors">
@@ -135,13 +139,22 @@ export function ActivityEventCard({
             </Link>
           )}
 
-          {/* Likes + comments */}
-          <EventInteractions
-            eventId={event.id}
-            initialLikeCount={event.likeCount ?? 0}
-            initialCommentCount={event.commentCount ?? 0}
-            initialHasLiked={event.hasLiked ?? false}
-          />
+          {/* Likes + comments + share */}
+          <div className="flex items-center gap-3">
+            <EventInteractions
+              eventId={event.id}
+              initialLikeCount={event.likeCount ?? 0}
+              initialCommentCount={event.commentCount ?? 0}
+              initialHasLiked={event.hasLiked ?? false}
+            />
+            <button
+              onClick={() => setShowShareDialog(true)}
+              aria-label="Share this activity"
+              className="text-foreground/30 hover:text-foreground/60 transition-colors"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* ── Game thumbnail ── */}
@@ -175,6 +188,12 @@ export function ActivityEventCard({
         )}
 
       </div>
+      <ShareToDialog
+        type="ACTIVITY_SHARE"
+        entityId={event.id}
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+      />
     </article>
   );
 }
