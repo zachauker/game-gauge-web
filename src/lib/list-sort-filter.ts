@@ -66,6 +66,39 @@ export function sortListItems(
   });
 }
 
+/**
+ * Reorders `activeId` to sit at `overId`'s position, but only within the
+ * subsequence of `fullItems` that also appears in `visibleItems` (e.g. when
+ * a filter narrows what's shown). Items in `fullItems` NOT present in
+ * `visibleItems` keep their original relative position — dragging within a
+ * filtered view must not silently reshuffle items the user can't see.
+ *
+ * Returns the full, reindexed item list (each item's `order` set to its new
+ * index), or `null` if `activeId`/`overId` aren't both found in `visibleItems`.
+ */
+export function reorderWithinVisible(
+  fullItems: GameListItem[],
+  visibleItems: GameListItem[],
+  activeId: string,
+  overId: string
+): GameListItem[] | null {
+  const oldVisibleIndex = visibleItems.findIndex((i) => i.id === activeId);
+  const newVisibleIndex = visibleItems.findIndex((i) => i.id === overId);
+  if (oldVisibleIndex === -1 || newVisibleIndex === -1) return null;
+
+  const reorderedVisible = [...visibleItems];
+  const [moved] = reorderedVisible.splice(oldVisibleIndex, 1);
+  reorderedVisible.splice(newVisibleIndex, 0, moved);
+
+  const visibleIds = new Set(visibleItems.map((i) => i.id));
+  let visibleCursor = 0;
+  const merged = fullItems.map((item) =>
+    visibleIds.has(item.id) ? reorderedVisible[visibleCursor++] : item
+  );
+
+  return merged.map((item, index) => ({ ...item, order: index }));
+}
+
 export function filterListItems(
   items: GameListItem[],
   filters: ListFilterState

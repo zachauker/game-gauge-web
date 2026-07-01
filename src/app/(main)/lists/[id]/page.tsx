@@ -23,7 +23,7 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useAuthStore } from "@/store/auth";
 import { getErrorMessage } from "@/lib/api";
 import type { GameList, GameListItem } from "@/lib/api";
@@ -45,6 +45,7 @@ import { ListItemRow } from "@/components/lists/list-item-row";
 import {
   sortListItems,
   filterListItems,
+  reorderWithinVisible,
   DEFAULT_LIST_FILTER_STATE,
   type SortBy,
   type SortDir,
@@ -208,21 +209,9 @@ export default function ListDetailPage() {
     const { active, over } = event;
     if (!list || !over || active.id === over.id) return;
 
-    const oldVisibleIndex = visibleItems.findIndex((i) => i.id === active.id);
-    const newVisibleIndex = visibleItems.findIndex((i) => i.id === over.id);
-    if (oldVisibleIndex === -1 || newVisibleIndex === -1) return;
+    const reordered = reorderWithinVisible(sortedItems, visibleItems, String(active.id), String(over.id));
+    if (!reordered) return;
 
-    const reorderedVisible = arrayMove(visibleItems, oldVisibleIndex, newVisibleIndex);
-
-    // Merge the reordered visible subsequence back into the full sorted list,
-    // preserving the relative position of items currently hidden by filters.
-    const visibleIds = new Set(visibleItems.map((i) => i.id));
-    let visibleCursor = 0;
-    const merged = sortedItems.map((item) =>
-      visibleIds.has(item.id) ? reorderedVisible[visibleCursor++] : item
-    );
-
-    const reordered = merged.map((item, index) => ({ ...item, order: index }));
     const previous = list;
     setList({ ...list, items: reordered });
 

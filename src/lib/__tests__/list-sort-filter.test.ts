@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   sortListItems,
   filterListItems,
+  reorderWithinVisible,
   DEFAULT_LIST_FILTER_STATE,
 } from "../list-sort-filter";
 import type { GameListItem } from "@/lib/api";
@@ -135,5 +136,48 @@ describe("filterListItems", () => {
       genres: ["Platformer"],
     });
     expect(result.map((i) => i.id)).toEqual(["c"]);
+  });
+});
+
+describe("reorderWithinVisible", () => {
+  const ids = ["a", "b", "c", "d", "e", "f"];
+  const fullItems = ids.map((id) => makeItem({ id }));
+
+  it("behaves like a plain full-list reorder when no filter is active", () => {
+    const visibleItems = fullItems;
+    const result = reorderWithinVisible(fullItems, visibleItems, "a", "c");
+    expect(result).not.toBeNull();
+    expect(result!.map((i) => i.id)).toEqual(["b", "c", "a", "d", "e", "f"]);
+  });
+
+  it("keeps hidden items in place and reorders visible items when dragging forward (f onto b)", () => {
+    const visibleItems = ["b", "d", "f"].map((id) => fullItems.find((i) => i.id === id)!);
+    const result = reorderWithinVisible(fullItems, visibleItems, "f", "b");
+    expect(result).not.toBeNull();
+    expect(result!.map((i) => i.id)).toEqual(["a", "f", "c", "b", "e", "d"]);
+  });
+
+  it("keeps hidden items in place and reorders visible items when dragging backward (b onto f)", () => {
+    const visibleItems = ["b", "d", "f"].map((id) => fullItems.find((i) => i.id === id)!);
+    const result = reorderWithinVisible(fullItems, visibleItems, "b", "f");
+    expect(result).not.toBeNull();
+    expect(result!.map((i) => i.id)).toEqual(["a", "d", "c", "f", "e", "b"]);
+  });
+
+  it("returns null when activeId is not found in visibleItems", () => {
+    const visibleItems = ["b", "d", "f"].map((id) => fullItems.find((i) => i.id === id)!);
+    expect(reorderWithinVisible(fullItems, visibleItems, "a", "f")).toBeNull();
+  });
+
+  it("returns null when overId is not found in visibleItems", () => {
+    const visibleItems = ["b", "d", "f"].map((id) => fullItems.find((i) => i.id === id)!);
+    expect(reorderWithinVisible(fullItems, visibleItems, "b", "e")).toBeNull();
+  });
+
+  it("sets order to the new 0-based index for every item", () => {
+    const visibleItems = ["b", "d", "f"].map((id) => fullItems.find((i) => i.id === id)!);
+    const result = reorderWithinVisible(fullItems, visibleItems, "f", "b");
+    expect(result!.map((i) => i.order)).toEqual([0, 1, 2, 3, 4, 5]);
+    result!.forEach((item, index) => expect(item.order).toBe(index));
   });
 });
