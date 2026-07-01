@@ -6,7 +6,7 @@
  */
 
 import { api } from "@/lib/api";
-import type { GameList, GameListItem, DefaultLists } from "@/lib/api";
+import type { GameList, GameListItem, DefaultLists, ListSortBy, ListSortDir } from "@/lib/api";
 
 // ─── Default lists ─────────────────────────────────────────────────────────
 
@@ -42,7 +42,13 @@ export async function createList(payload: {
 
 export async function updateList(
   listId: string,
-  payload: { name?: string; description?: string; isPublic?: boolean }
+  payload: {
+    name?: string;
+    description?: string;
+    isPublic?: boolean;
+    sortBy?: ListSortBy;
+    sortDir?: ListSortDir;
+  }
 ): Promise<GameList> {
   const { data } = await api.patch(`/lists/${listId}`, payload);
   return data.data;
@@ -84,6 +90,13 @@ export async function updateListItem(
 ): Promise<GameListItem> {
   const { data } = await api.patch(`/lists/${listId}/games/${gameId}`, payload);
   return data.data;
+}
+
+export async function reorderListItems(
+  listId: string,
+  items: Array<{ id: string; order: number }>
+): Promise<void> {
+  await api.post(`/lists/${listId}/reorder`, { items });
 }
 
 // ─── Achievement sync ──────────────────────────────────────────────────────

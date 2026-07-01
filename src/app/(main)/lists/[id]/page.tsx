@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { MainLayout } from "@/components/layout/main-layout";
 import {
   ChevronLeft,
@@ -14,20 +13,44 @@ import {
   Trash2,
   Edit,
   Search,
-  Trophy,
-  CheckCircle2,
 } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useAuthStore } from "@/store/auth";
 import { getErrorMessage } from "@/lib/api";
 import type { GameList, GameListItem } from "@/lib/api";
-import { getList, deleteList, removeGameFromList, updateListItem } from "@/lib/lists";
+import {
+  getList,
+  deleteList,
+  removeGameFromList,
+  updateListItem,
+  updateList,
+  reorderListItems,
+} from "@/lib/lists";
 import { CreateListDialog } from "@/components/lists/create-list-dialog";
 import { AddGameToListDialog } from "@/components/lists/add-game-dialog";
-import { ProgressBar } from "@/components/lists/progress-bar";
 import { ProgressEditDialog } from "@/components/lists/progress-edit-dialog";
 import { CompleteGameDialog } from "@/components/lists/complete-game-dialog";
 import { SteamWishlistImportDialog } from "@/components/lists/steam-wishlist-import-dialog";
-import { AchievementBadge } from "@/components/lists/achievement-badge";
+import { ListToolbar } from "@/components/lists/list-toolbar";
+import { ListItemRow } from "@/components/lists/list-item-row";
+import {
+  sortListItems,
+  filterListItems,
+  reorderWithinVisible,
+  DEFAULT_LIST_FILTER_STATE,
+  type SortBy,
+  type SortDir,
+  type ListFilterState,
+} from "@/lib/list-sort-filter";
 import { syncAchievements } from "@/lib/lists";
 import { toast } from "sonner";
 
@@ -57,6 +80,11 @@ export default function ListDetailPage() {
   const [completeTarget, setCompleteTarget] = useState<{ gameId: string; gameTitle: string } | null>(null);
   const [showSteamImport, setShowSteamImport] = useState(false);
   const [syncingAchievementsFor, setSyncingAchievementsFor] = useState<string | null>(null);
+  const [filters, setFilters] = useState<ListFilterState>(DEFAULT_LIST_FILTER_STATE);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const isOwner       = isAuthenticated && user?.id === list?.userId;
   const isPlayingList = list?.listType === "playing";
@@ -64,6 +92,26 @@ export default function ListDetailPage() {
   const hasSteam      = Boolean(user?.steamId);
   const showSteamImportButton = isOwner && isWishlist && hasSteam;
   const existingGameIds = new Set((list?.items ?? []).map((item) => item.gameId));
+
+  const sortBy = (list?.sortBy ?? "custom") as SortBy;
+  const sortDir = (list?.sortDir ?? "asc") as SortDir;
+  const dragEnabled = isOwner && sortBy === "custom";
+
+  const sortedItems = useMemo(
+    () => (list ? sortListItems(list.items ?? [], sortBy, sortDir) : []),
+    [list, sortBy, sortDir]
+  );
+  const visibleItems = useMemo(() => filterListItems(sortedItems, filters), [sortedItems, filters]);
+
+  const availableGenres = useMemo(
+    () => Array.from(new Set((list?.items ?? []).flatMap((i) => i.game?.genres ?? []))).sort(),
+    [list]
+  );
+  const availablePlatforms = useMemo(
+    () => Array.from(new Set((list?.items ?? []).flatMap((i) => i.game?.platforms ?? []))).sort(),
+    [list]
+  );
+  const hasProgressData = (list?.items ?? []).some((i) => i.progressPct !== null && i.progressPct !== undefined);
 
   useEffect(() => {
     if (listId) loadList();
@@ -142,6 +190,39 @@ export default function ListDetailPage() {
       toast.error(getErrorMessage(err));
     } finally {
       setSyncingAchievementsFor(null);
+    }
+  };
+
+  const handleSortChange = async (newSortBy: SortBy, newSortDir: SortDir) => {
+    if (!list) return;
+    const previous = list;
+    setList({ ...list, sortBy: newSortBy, sortDir: newSortDir });
+    try {
+      await updateList(listId, { sortBy: newSortBy, sortDir: newSortDir });
+    } catch (err) {
+      setList(previous);
+      toast.error(getErrorMessage(err));
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!list || !over || active.id === over.id) return;
+
+    const reordered = reorderWithinVisible(sortedItems, visibleItems, String(active.id), String(over.id));
+    if (!reordered) return;
+
+    const previous = list;
+    setList({ ...list, items: reordered });
+
+    try {
+      await reorderListItems(
+        listId,
+        reordered.map((item) => ({ id: item.id, order: item.order }))
+      );
+    } catch (err) {
+      setList(previous);
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -289,124 +370,66 @@ export default function ListDetailPage() {
           </div>
         )}
 
-        {/* ── Game list ── */}
+        {/* ── Toolbar ── */}
         {list.items && list.items.length > 0 && (
-          <div className="space-y-3">
-            {list.items.map((item: GameListItem) => {
-              const isAt100 = isPlayingList && (item.progressPct ?? 0) === 100;
+          <ListToolbar
+            search={filters.search}
+            onSearchChange={(search) => setFilters((f) => ({ ...f, search }))}
+            sortBy={sortBy}
+            sortDir={sortDir}
+            onSortChange={handleSortChange}
+            availableGenres={availableGenres}
+            availablePlatforms={availablePlatforms}
+            selectedGenres={filters.genres}
+            onGenresChange={(genres) => setFilters((f) => ({ ...f, genres }))}
+            selectedPlatforms={filters.platforms}
+            onPlatformsChange={(platforms) => setFilters((f) => ({ ...f, platforms }))}
+            showStatusFilter={hasProgressData}
+            status={filters.status}
+            onStatusChange={(status) => setFilters((f) => ({ ...f, status }))}
+          />
+        )}
 
-              return (
-                <div
-                  key={item.id}
-                  className={`bg-card rounded-lg border p-4 transition-colors ${
-                    isAt100
-                      ? "border-brand-teal/30"
-                      : "border-brand-purple/15 hover:border-brand-purple/25"
-                  }`}
-                >
-                  <div className="flex items-start gap-4">
-
-                    {/* Cover */}
-                    <div className="w-12 h-16 relative rounded overflow-hidden bg-brand-purple/10 shrink-0 border border-brand-purple/10">
-                      {item.game?.coverImage ? (
-                        <Image
-                          src={item.game.coverImage}
-                          alt={item.game.title ?? ""}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[10px] text-foreground/20">
-                          No art
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <Link
-                            href={`/games/${item.game?.slug}`}
-                            className="text-[14px] font-medium text-foreground hover:text-brand-purple transition-colors line-clamp-1"
-                          >
-                            {item.game?.title}
-                          </Link>
-                          {item.notes && (
-                            <p className="text-[12px] text-foreground/40 mt-0.5 line-clamp-2">
-                              {item.notes}
-                            </p>
-                          )}
-                        </div>
-
-                        {isOwner && (
-                          <button
-                            className="p-1.5 shrink-0 text-foreground/25 hover:text-brand-red hover:bg-brand-red/5 rounded transition-colors"
-                            onClick={() => handleRemoveGame(item.gameId)}
-                            aria-label="Remove game"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Progress — Currently Playing only */}
-                      {isPlayingList && (
-                        <div className="mt-3 space-y-1.5">
-                          <ProgressBar
-                            value={item.progressPct}
-                            editable={isOwner}
-                            onClick={() =>
-                              setProgressEdit({
-                                gameId: item.gameId,
-                                gameTitle: item.game?.title ?? "",
-                                currentPct: item.progressPct,
-                                currentNote: item.progressNote,
-                              })
-                            }
-                          />
-                          {item.progressNote && (
-                            <p className="text-[12px] text-foreground/35 italic">
-                              {item.progressNote}
-                            </p>
-                          )}
-
-                          <AchievementBadge
-                            achievements={item.steamAchievements}
-                            isSyncing={syncingAchievementsFor === item.gameId}
-                            onSync={() => handleSyncAchievements(item.gameId)}
-                            hasSteam={Boolean(user?.steamId)}
-                          />
-
-                          {/* 100% completion nudge */}
-                          {isAt100 && (
-                            <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-brand-teal/10 border border-brand-teal/20 rounded-lg text-[12px] text-brand-teal">
-                              <CheckCircle2 className="h-4 w-4 shrink-0" />
-                              <span className="flex-1">
-                                You&apos;re at 100% — ready to mark this complete?
-                              </span>
-                              <button
-                                onClick={() =>
-                                  setCompleteTarget({
-                                    gameId: item.gameId,
-                                    gameTitle: item.game?.title ?? "",
-                                  })
-                                }
-                                className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors"
-                              >
-                                <Trophy className="h-3 w-3" />
-                                Complete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {/* ── No results from filters ── */}
+        {list.items && list.items.length > 0 && visibleItems.length === 0 && (
+          <div className="rounded-lg border border-dashed border-brand-purple/20 bg-card py-14 text-center">
+            <Search className="mx-auto h-8 w-8 text-foreground/20 mb-3" />
+            <p className="text-[13px] text-foreground/40">No games match your search/filters.</p>
           </div>
+        )}
+
+        {/* ── Game list ── */}
+        {visibleItems.length > 0 && (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={visibleItems.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+              <div className="space-y-3">
+                {visibleItems.map((item: GameListItem) => (
+                  <ListItemRow
+                    key={item.id}
+                    item={item}
+                    isOwner={isOwner}
+                    isPlayingList={isPlayingList}
+                    dragEnabled={dragEnabled}
+                    syncingAchievements={syncingAchievementsFor === item.gameId}
+                    hasSteam={Boolean(user?.steamId)}
+                    onRemove={handleRemoveGame}
+                    onProgressEditClick={() =>
+                      setProgressEdit({
+                        gameId: item.gameId,
+                        gameTitle: item.game?.title ?? "",
+                        currentPct: item.progressPct,
+                        currentNote: item.progressNote,
+                      })
+                    }
+                    onSyncAchievements={() => handleSyncAchievements(item.gameId)}
+                    onCompleteClick={() =>
+                      setCompleteTarget({ gameId: item.gameId, gameTitle: item.game?.title ?? "" })
+                    }
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
 
         {/* ── Dialogs ── */}
