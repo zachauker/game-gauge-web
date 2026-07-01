@@ -13,6 +13,7 @@ import {
   Trash2,
   Edit,
   Search,
+  Share2,
 } from "lucide-react";
 import {
   DndContext,
@@ -41,6 +42,7 @@ import { ProgressEditDialog } from "@/components/lists/progress-edit-dialog";
 import { CompleteGameDialog } from "@/components/lists/complete-game-dialog";
 import { SteamWishlistImportDialog } from "@/components/lists/steam-wishlist-import-dialog";
 import { ListToolbar } from "@/components/lists/list-toolbar";
+import { ShareToDialog } from "@/components/messages/share-to-dialog";
 import { ListItemRow } from "@/components/lists/list-item-row";
 import {
   sortListItems,
@@ -79,6 +81,7 @@ export default function ListDetailPage() {
   const [progressEdit, setProgressEdit] = useState<ProgressEditState | null>(null);
   const [completeTarget, setCompleteTarget] = useState<{ gameId: string; gameTitle: string } | null>(null);
   const [showSteamImport, setShowSteamImport] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [syncingAchievementsFor, setSyncingAchievementsFor] = useState<string | null>(null);
   const [filters, setFilters] = useState<ListFilterState>(DEFAULT_LIST_FILTER_STATE);
   const sensors = useSensors(
@@ -303,6 +306,13 @@ export default function ListDetailPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowShareDialog(true)}
+              className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/40 hover:text-foreground transition-colors"
+              aria-label="Share this list"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
             {showSteamImportButton && (
               <button
                 onClick={() => setShowSteamImport(true)}
@@ -469,6 +479,12 @@ export default function ListDetailPage() {
           wishlistId={listId}
           existingGameIds={existingGameIds}
           onImported={loadList}
+        />
+        <ShareToDialog
+          type="LIST_SHARE"
+          entityId={list.id}
+          open={showShareDialog}
+          onOpenChange={setShowShareDialog}
         />
       </div>
     </MainLayout>
