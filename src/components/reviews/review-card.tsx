@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Star, ThumbsUp, Edit, Trash2, EyeOff, Eye, MoreHorizontal } from "lucide-react";
+import { Star, ThumbsUp, Edit, Trash2, EyeOff, Eye, MoreHorizontal, Share2 } from "lucide-react";
+import { ShareToDialog } from "@/components/messages/share-to-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +56,7 @@ export function ReviewCard({
   onToggleHelpful,
 }: ReviewCardProps) {
   const [showSpoilers, setShowSpoilers] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   if (!review.user) return null;
 
@@ -109,6 +111,15 @@ export function ReviewCard({
               </span>
             </div>
           )}
+
+          {/* Share */}
+          <button
+            onClick={() => setShowShareDialog(true)}
+            aria-label="Share this review"
+            className="text-foreground/25 hover:text-foreground/60 transition-colors p-0.5"
+          >
+            <Share2 className="h-3.5 w-3.5" />
+          </button>
 
           {/* Owner menu */}
           {isOwner && (onEdit || onDelete) && (
@@ -196,6 +207,12 @@ export function ReviewCard({
           </button>
         </div>
       )}
+      <ShareToDialog
+        type="REVIEW_SHARE"
+        entityId={review.id}
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
+      />
     </div>
   );
 }
