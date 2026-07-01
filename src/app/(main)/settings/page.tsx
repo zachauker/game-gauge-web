@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, Lock, Bell, Shield } from "lucide-react";
 import ProfileSettingsTab from "@/app/(main)/settings/profile-tab";
 import SecuritySettingsTab from "@/app/(main)/settings/security-tab"
+import PrivacySettingsTab from "@/app/(main)/settings/privacy-tab";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
@@ -23,7 +24,7 @@ export default function SettingsPage() {
 
         {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Profile</span>
@@ -31,6 +32,10 @@ export default function SettingsPage() {
             <TabsTrigger value="security" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
               <span className="hidden sm:inline">Security</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Privacy</span>
             </TabsTrigger>
           </TabsList>
 
@@ -42,6 +47,11 @@ export default function SettingsPage() {
           {/* Security Tab */}
           <TabsContent value="security" className="mt-6">
             <SecuritySettingsTab />
+          </TabsContent>
+
+          {/* Privacy Tab */}
+          <TabsContent value="privacy" className="mt-6">
+            <PrivacySettingsTab />
           </TabsContent>
         </Tabs>
       </div>

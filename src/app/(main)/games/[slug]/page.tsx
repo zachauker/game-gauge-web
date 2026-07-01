@@ -12,6 +12,7 @@ import { RatingStats } from "@/components/games/rating-stats";
 import { ReviewList } from "@/components/reviews/review-list";
 import { WriteReviewDialog } from "@/components/reviews/write-review-dialog";
 import { AddToListDialog } from "@/components/lists/add-to-list-dialog";
+import { ShareToDialog } from "@/components/messages/share-to-dialog";
 import { AutoImportGameCard } from "@/components/games/auto-import-game-card";
 import { api, getErrorMessage, RatingStats as RatingStatsType, IGDBGame } from "@/lib/api";
 import { getMyLists } from "@/lib/lists";
@@ -24,6 +25,7 @@ import {
   MessageSquare,
   ListPlus,
   Pencil,
+  Share2,
   CheckCircle2,
   Users,
   Play,
@@ -363,6 +365,7 @@ export default function GameDetailPage() {
 
   // ── Review write ─────────────────────────────────────────────────────────
   const [showWriteReviewDialog, setShowWriteReviewDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [topReview, setTopReview]                         = useState<Review | null>(null);
   const [totalReviews, setTotalReviews]                   = useState(0);
 
@@ -775,6 +778,9 @@ export default function GameDetailPage() {
             {isAuthenticated && (
               <ActionButton onClick={() => setShowWriteReviewDialog(true)} icon={<Pencil className="h-4 w-4" />} label="Write a review" />
             )}
+            {isAuthenticated && (
+              <ActionButton onClick={() => setShowShareDialog(true)} icon={<Share2 className="h-4 w-4" />} label="Share" />
+            )}
 
             {/* List status chips */}
             <ListStatusChips statuses={listStatuses} />
@@ -852,6 +858,12 @@ export default function GameDetailPage() {
         onOpenChange={setShowWriteReviewDialog}
         onSubmit={handleReviewCreate}
         mode="create"
+      />
+      <ShareToDialog
+        type="GAME_SHARE"
+        entityId={game.id}
+        open={showShareDialog}
+        onOpenChange={setShowShareDialog}
       />
     </MainLayout>
   );
