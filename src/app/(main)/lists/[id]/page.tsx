@@ -208,14 +208,21 @@ export default function ListDetailPage() {
     const { active, over } = event;
     if (!list || !over || active.id === over.id) return;
 
-    const oldIndex = sortedItems.findIndex((i) => i.id === active.id);
-    const newIndex = sortedItems.findIndex((i) => i.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
+    const oldVisibleIndex = visibleItems.findIndex((i) => i.id === active.id);
+    const newVisibleIndex = visibleItems.findIndex((i) => i.id === over.id);
+    if (oldVisibleIndex === -1 || newVisibleIndex === -1) return;
 
-    const reordered = arrayMove(sortedItems, oldIndex, newIndex).map((item, index) => ({
-      ...item,
-      order: index,
-    }));
+    const reorderedVisible = arrayMove(visibleItems, oldVisibleIndex, newVisibleIndex);
+
+    // Merge the reordered visible subsequence back into the full sorted list,
+    // preserving the relative position of items currently hidden by filters.
+    const visibleIds = new Set(visibleItems.map((i) => i.id));
+    let visibleCursor = 0;
+    const merged = sortedItems.map((item) =>
+      visibleIds.has(item.id) ? reorderedVisible[visibleCursor++] : item
+    );
+
+    const reordered = merged.map((item, index) => ({ ...item, order: index }));
     const previous = list;
     setList({ ...list, items: reordered });
 
