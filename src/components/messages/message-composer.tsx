@@ -39,9 +39,9 @@ export function MessageComposer({ onSend }: MessageComposerProps) {
         type="submit"
         disabled={!content.trim() || sending}
         aria-label="Send message"
-        className="p-2 rounded-full bg-brand-purple text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-purple/80 transition-colors"
+        className="p-2 rounded-full bg-brand-purple text-foreground disabled:opacity-30 disabled:cursor-not-allowed hover:bg-brand-purple/80 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
-        <Send className="h-4 w-4" />
+        <Send className="h-4 w-4" aria-hidden="true"/>
       </button>
     </form>
   );

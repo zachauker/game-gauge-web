@@ -17,11 +17,23 @@ interface ShareToDialogProps {
 export function ShareToDialog({ open, onOpenChange, type, entityId }: ShareToDialogProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
 
   const handleSearch = async (value: string) => {
     setQuery(value);
-    setResults(value.trim() ? await searchUsers(value) : []);
+    if (!value.trim()) {
+      setResults([]);
+      return;
+    }
+    setSearching(true);
+    try {
+      setResults(await searchUsers(value));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't search users");
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleSend = async (user: UserSearchResult) => {
@@ -52,17 +64,23 @@ export function ShareToDialog({ open, onOpenChange, type, entityId }: ShareToDia
         />
 
         <div className="max-h-56 overflow-y-auto space-y-1 py-2">
-          {results.map((user) => (
-            <button
-              key={user.id}
-              onClick={() => void handleSend(user)}
-              disabled={sendingTo !== null}
-              className="flex items-center justify-between w-full text-left px-2 py-2 rounded-md text-sm hover:bg-foreground/5 disabled:opacity-50"
-            >
-              {user.username}
-              {sendingTo === user.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            </button>
-          ))}
+          {searching ? (
+            <p className="text-sm text-foreground/60 px-2 py-1.5">Searching...</p>
+          ) : results.length === 0 && query.trim() ? (
+            <p className="text-sm text-foreground/60 px-2 py-1.5">No users found</p>
+          ) : (
+            results.map((user) => (
+              <button
+                key={user.id}
+                onClick={() => void handleSend(user)}
+                disabled={sendingTo !== null}
+                className="flex items-center justify-between w-full text-left px-2 py-2 rounded-md text-sm hover:bg-foreground/5 disabled:opacity-50 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {user.username}
+                {sendingTo === user.id && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
+              </button>
+            ))
+          )}
         </div>
       </DialogContent>
     </Dialog>

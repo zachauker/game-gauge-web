@@ -38,7 +38,7 @@ export function ConversationListItem({ conversation, active, onClick }: Conversa
     <button
       onClick={onClick}
       className={`
-        w-full text-left px-4 py-3 border-b border-border transition-colors
+        w-full text-left px-4 py-3 border-b border-border transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset
         ${active ? "bg-brand-purple/10" : "hover:bg-foreground/5"}
       `}
     >

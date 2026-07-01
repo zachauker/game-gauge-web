@@ -35,6 +35,30 @@ interface FilterChipsProps {
   onSortChange: (sort: SortOption) => void;
 }
 
+function useCloseOnOutsideOrEscape(open: boolean, setOpen: (open: boolean) => void) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, setOpen]);
+
+  return ref;
+}
+
 function ChipDropdown({
   label,
   value,
@@ -51,27 +75,16 @@ function ChipDropdown({
   onClear: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  const ref = useCloseOnOutsideOrEscape(open, setOpen);
 
   if (disabled) {
     return (
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-white/10 text-white/25 cursor-not-allowed select-none"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-border text-foreground/50 cursor-not-allowed select-none"
         title={`${label} filter not available in search mode`}
       >
         <span>{label}</span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" aria-hidden="true" />
       </div>
     );
   }
@@ -83,10 +96,10 @@ function ChipDropdown({
         <button
           type="button"
           onClick={onClear}
-          className="hover:text-white transition-colors"
+          className="hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label={`Remove ${label} filter`}
         >
-          <X className="h-3 w-3" />
+          <X className="h-3 w-3" aria-hidden="true" />
         </button>
       </div>
     );
@@ -97,23 +110,30 @@ function ChipDropdown({
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-brand-purple/35 bg-brand-purple/15 text-brand-purple-light hover:border-brand-purple/60 transition-colors"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-brand-purple/35 bg-brand-purple/15 text-primary hover:border-brand-purple/60 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span>{label}</span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" aria-hidden="true" />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-64 overflow-y-auto">
+        <div
+          role="listbox"
+          className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden min-w-[180px] max-h-64 overflow-y-auto"
+        >
           {options.map(option => (
             <button
               key={option}
               type="button"
+              role="option"
+              aria-selected={false}
               onClick={() => {
                 onSelect(option);
                 setOpen(false);
               }}
-              className="w-full text-left px-4 py-2 text-sm text-white/80 hover:bg-brand-purple/20 hover:text-white transition-colors"
+              className="w-full text-left px-4 py-2 text-sm text-foreground/80 hover:bg-brand-purple/20 hover:text-foreground transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
             >
               {option}
             </button>
@@ -134,29 +154,18 @@ function SortChip({
   onChange: (v: SortOption) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
+  const ref = useCloseOnOutsideOrEscape(open, setOpen);
 
   const currentLabel = SORT_OPTIONS.find(o => o.value === value)?.label ?? 'Sort';
 
   if (disabled) {
     return (
       <div
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-white/10 text-white/25 cursor-not-allowed select-none"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-border text-foreground/50 cursor-not-allowed select-none"
         title="Sort not available in search mode"
       >
         <span>Sort: {currentLabel}</span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" aria-hidden="true" />
       </div>
     );
   }
@@ -166,26 +175,33 @@ function SortChip({
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-brand-purple/35 bg-brand-purple/15 text-brand-purple-light hover:border-brand-purple/60 transition-colors"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-brand-purple/35 bg-brand-purple/15 text-primary hover:border-brand-purple/60 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span>Sort: {currentLabel}</span>
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-3 w-3" aria-hidden="true" />
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-white/10 rounded-lg shadow-xl overflow-hidden min-w-[160px]">
+        <div
+          role="listbox"
+          className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-lg shadow-xl overflow-hidden min-w-[160px]"
+        >
           {SORT_OPTIONS.map(option => (
             <button
               key={option.value}
               type="button"
+              role="option"
+              aria-selected={option.value === value}
               onClick={() => {
                 onChange(option.value);
                 setOpen(false);
               }}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+              className={`w-full text-left px-4 py-2 text-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                 option.value === value
                   ? 'text-brand-amber bg-brand-amber/10'
-                  : 'text-white/80 hover:bg-brand-purple/20 hover:text-white'
+                  : 'text-foreground/80 hover:bg-brand-purple/20 hover:text-foreground'
               }`}
             >
               {option.label}

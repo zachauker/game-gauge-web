@@ -5,6 +5,23 @@ import { MoreHorizontal } from "lucide-react";
 import { Message } from "@/lib/messages";
 import { ShareAttachmentCard } from "./share-attachment-card";
 import { useAuthStore } from "@/store/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface MessageBubbleProps {
   message: Message;
@@ -17,7 +34,7 @@ export function MessageBubble({ message, onEdit, onDelete }: MessageBubbleProps)
   const isOwn = user?.id === message.senderId;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(message.content ?? "");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const handleSaveEdit = async () => {
     if (!draft.trim()) return;
@@ -36,14 +53,21 @@ export function MessageBubble({ message, onEdit, onDelete }: MessageBubbleProps)
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="text-sm rounded-lg border border-brand-purple/40 bg-background px-3 py-2 outline-none resize-none"
+                autoFocus
+                className="text-sm rounded-lg border border-brand-purple/40 bg-background px-3 py-2 outline-none resize-none focus-visible:ring-2 focus-visible:ring-ring"
                 rows={2}
               />
-              <div className="flex gap-2 text-xs">
-                <button onClick={() => void handleSaveEdit()} className="text-brand-purple font-medium">
+              <div className="flex gap-3 text-xs">
+                <button
+                  onClick={() => void handleSaveEdit()}
+                  className="text-brand-purple font-medium rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
                   Save
                 </button>
-                <button onClick={() => setEditing(false)} className="text-foreground/40">
+                <button
+                  onClick={() => setEditing(false)}
+                  className="text-foreground/60 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                >
                   Cancel
                 </button>
               </div>
@@ -54,7 +78,7 @@ export function MessageBubble({ message, onEdit, onDelete }: MessageBubbleProps)
                 rounded-lg px-3 py-2 text-sm
                 ${
                   message.deletedAt
-                    ? "italic text-foreground/40 bg-foreground/[0.03]"
+                    ? "italic text-foreground/50 bg-foreground/[0.03]"
                     : isOwn
                       ? "bg-brand-purple text-foreground"
                       : "bg-foreground/[0.06] text-foreground"
@@ -63,44 +87,61 @@ export function MessageBubble({ message, onEdit, onDelete }: MessageBubbleProps)
             >
               {message.deletedAt ? "Message deleted" : message.content}
               {message.editedAt && !message.deletedAt && (
-                <span className="text-[10px] opacity-60 ml-1.5">(edited)</span>
+                <span className="text-[10px] opacity-80 ml-1.5">(edited)</span>
               )}
             </div>
           )}
         </div>
 
         {isOwn && !message.deletedAt && message.type === "TEXT" && !editing && (
-          <div className="relative opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label="Message options"
-              className="p-1 rounded text-foreground/40 hover:text-foreground/70"
-            >
-              <MoreHorizontal className="h-3.5 w-3.5" />
-            </button>
-            {menuOpen && (
-              <div className="absolute bottom-full mb-1 right-0 bg-background border border-border rounded-md shadow-lg py-1 text-xs whitespace-nowrap z-10">
+          <AlertDialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
-                  onClick={() => {
-                    setEditing(true);
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-1.5 hover:bg-foreground/5"
+                  aria-label="Message options"
+                  className="p-1 rounded text-foreground/50 hover:text-foreground/80 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <MoreHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-background border-brand-purple/20 text-[13px] min-w-[140px]">
+                <DropdownMenuItem
+                  onClick={() => setEditing(true)}
+                  className="cursor-pointer text-foreground/70 focus:text-foreground"
                 >
                   Edit
-                </button>
-                <button
-                  onClick={() => {
-                    void onDelete(message.id);
-                    setMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-1.5 text-brand-red hover:bg-brand-red/5"
+                </DropdownMenuItem>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    onClick={() => setConfirmingDelete(true)}
+                    className="cursor-pointer text-brand-red focus:text-brand-red focus:bg-brand-red/10"
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this message?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This can&apos;t be undone. The message will be replaced with &quot;Message
+                  deleted&quot; for everyone in the conversation.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => void onDelete(message.id)}
+                  className="bg-destructive hover:bg-destructive/90"
                 >
                   Delete
-                </button>
-              </div>
-            )}
-          </div>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
     </div>

@@ -206,34 +206,34 @@ function DiscoverContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-xs text-white/25 uppercase tracking-widest mb-1">Discover</p>
-        <h1 className="text-2xl font-semibold text-white mb-1">Games</h1>
-        <p className="text-sm text-white/35">200,000+ titles · powered by IGDB</p>
+        <p className="text-xs text-foreground/60 uppercase tracking-widest mb-1">Discover</p>
+        <h1 className="text-2xl font-semibold text-foreground mb-1">Games</h1>
+        <p className="text-sm text-foreground/60">200,000+ titles · powered by IGDB</p>
       </div>
 
       {/* Search bar */}
-      <div className={`flex items-center gap-2 rounded-xl border px-4 py-3 mb-4 transition-colors ${
+      <div className={`flex items-center gap-2 rounded-xl border px-4 py-3 mb-4 transition-colors motion-reduce:transition-none ${
         searchMode
           ? 'border-brand-purple/60 bg-brand-purple/5'
-          : 'border-brand-purple/30 bg-white/3'
+          : 'border-brand-purple/30 bg-foreground/[0.03]'
       }`}>
-        <Search className="h-4 w-4 text-white/25 shrink-0" aria-hidden="true" />
+        <Search className="h-4 w-4 text-foreground/30 shrink-0" aria-hidden="true" />
         <input
           type="text"
           placeholder="Search by title, developer…"
           value={query}
           onChange={e => handleSearchChange(e.target.value)}
-          className="flex-1 bg-transparent text-sm text-white placeholder-white/20 outline-none"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-foreground/50 outline-none"
           aria-label="Search games"
         />
         {query && (
           <button
             type="button"
             onClick={clearSearch}
-            className="text-white/30 hover:text-white/60 transition-colors"
+            className="text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Clear search"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
       </div>
@@ -255,15 +255,15 @@ function DiscoverContent() {
       {searchMode ? (
         <div>
           {resultLabel && (
-            <p className="text-xs text-white/30 mb-4">{resultLabel}</p>
+            <p className="text-xs text-foreground/60 mb-4">{resultLabel}</p>
           )}
           {searchError ? (
             <div className="text-center py-12">
-              <p className="text-white/40 text-sm mb-3">Search failed. Please try again.</p>
+              <p className="text-foreground/60 text-sm mb-3">Search failed. Please try again.</p>
               <button
                 type="button"
                 onClick={() => setRetryCount(c => c + 1)}
-                className="text-xs text-brand-purple hover:text-brand-purple-light"
+                className="text-xs text-brand-purple hover:text-primary transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Try again
               </button>
@@ -289,23 +289,23 @@ function DiscoverContent() {
             ))}
           </GameGrid>
           {browseTotalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex justify-center items-center gap-2 mt-8">
               <button
                 type="button"
                 disabled={browsePage <= 1}
                 onClick={() => setBrowsePage(p => p - 1)}
-                className="px-4 py-2 text-sm rounded-lg border border-white/10 text-white/60 hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm rounded-lg border border-border text-foreground/70 hover:border-brand-purple/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Previous
               </button>
-              <span className="px-4 py-2 text-sm text-white/40">
+              <span className="px-4 py-2 text-sm text-foreground/60">
                 {browsePage} / {browseTotalPages}
               </span>
               <button
                 type="button"
                 disabled={browsePage >= browseTotalPages}
                 onClick={() => setBrowsePage(p => p + 1)}
-                className="px-4 py-2 text-sm rounded-lg border border-white/10 text-white/60 hover:border-white/25 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 text-sm rounded-lg border border-border text-foreground/70 hover:border-brand-purple/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 Next
               </button>

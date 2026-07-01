@@ -8,7 +8,7 @@ interface GameGridProps {
 
 function SkeletonCard() {
   return (
-    <div className="aspect-[3/4] rounded-lg bg-white/5 animate-pulse border border-white/5" />
+    <div className="aspect-[3/4] rounded-lg bg-card border border-brand-purple/10 animate-pulse motion-reduce:animate-none" />
   );
 }
 

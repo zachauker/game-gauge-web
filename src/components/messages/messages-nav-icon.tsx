@@ -12,9 +12,9 @@ export function MessagesNavIcon() {
     <Link
       href="/messages"
       aria-label={`Messages${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
-      className="relative p-2 rounded-md text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors"
+      className="relative p-2 rounded-md text-foreground/70 hover:text-foreground hover:bg-foreground/5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
-      <Send className="h-5 w-5" />
+      <Send className="h-5 w-5" aria-hidden="true"/>
       {unreadCount > 0 && (
         <span
           aria-hidden="true"

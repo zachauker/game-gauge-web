@@ -4,9 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Star, Loader2 } from 'lucide-react';
+import { Star, Loader2, Gamepad2 } from 'lucide-react';
 import { api, IGDBGame } from '@/lib/api';
 import { DBGame, CommunityData, getIGDBImageUrl } from '@/lib/search';
+import { toast } from 'sonner';
 
 type DiscoverGameCardProps =
   | { mode: 'db'; game: DBGame }
@@ -30,7 +31,7 @@ function CardShell({
   const showRating = averageRating !== undefined && averageRating > 0 && ratingCount !== undefined && ratingCount > 0;
 
   return (
-    <div className="group relative flex flex-col rounded-lg overflow-hidden bg-card border border-brand-purple/20 hover:border-brand-purple/50 transition-[border-color] duration-200 cursor-pointer">
+    <div className="group relative flex flex-col rounded-lg overflow-hidden bg-card border border-brand-purple/20 hover:border-brand-purple/50 transition-[border-color] duration-200 motion-reduce:transition-none cursor-pointer">
       <div className="relative aspect-[3/4] overflow-hidden bg-brand-purple/10 shrink-0">
         {coverUrl ? (
           <Image
@@ -42,7 +43,7 @@ function CardShell({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center opacity-20">
-            <span className="text-white text-2xl">🎮</span>
+            <Gamepad2 className="h-8 w-8 text-foreground" aria-hidden="true" />
           </div>
         )}
 
@@ -83,7 +84,10 @@ export function DiscoverGameCard(props: DiscoverGameCardProps) {
       : null;
 
     return (
-      <Link href={`/games/${game.slug}`} className="block">
+      <Link
+        href={`/games/${game.slug}`}
+        className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
         <CardShell
           coverUrl={game.coverImage || null}
           title={game.title}
@@ -120,7 +124,12 @@ function IGDBCard({ game, communityData }: { game: IGDBGame; communityData?: Com
       const response = await api.post('/igdb/import', { igdbId: game.id });
       const importedGame = response.data.data;
       router.push(`/games/${importedGame.slug}`);
-    } catch {
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error?.message ||
+        error.message ||
+        "Couldn't open this game right now";
+      toast.error(message);
       setIsImporting(false);
     }
   };
@@ -130,7 +139,7 @@ function IGDBCard({ game, communityData }: { game: IGDBGame; communityData?: Com
       <button
         type="button"
         onClick={handleClick}
-        className="w-full text-left bg-transparent border-0 p-0 block"
+        className="w-full text-left bg-transparent border-0 p-0 block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         aria-label={game.name}
       >
         <CardShell
@@ -144,7 +153,7 @@ function IGDBCard({ game, communityData }: { game: IGDBGame; communityData?: Com
 
       {isImporting && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-lg flex items-center justify-center z-10 pointer-events-none">
-          <Loader2 className="h-6 w-6 animate-spin text-brand-purple/60" />
+          <Loader2 className="h-6 w-6 animate-spin text-brand-purple/60" aria-hidden="true" />
         </div>
       )}
     </div>

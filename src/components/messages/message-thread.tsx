@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useMessages } from "@/hooks/useMessages";
 import { MessageBubble } from "./message-bubble";
 import { MessageComposer } from "./message-composer";
@@ -46,7 +48,14 @@ export function MessageThread({ conversationId, title }: MessageThreadProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border shrink-0">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
+        <Link
+          href="/messages"
+          aria-label="Back to conversations"
+          className="sm:hidden -ml-1.5 p-1.5 rounded-md text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        </Link>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       </div>
 
