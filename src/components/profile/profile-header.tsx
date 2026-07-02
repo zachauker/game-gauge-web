@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { blockUser } from "@/lib/blocks";
+import { blockUser, unblockUser } from "@/lib/blocks";
 import { toast } from "sonner";
 
 interface ProfileHeaderProps {
@@ -42,14 +42,22 @@ export function ProfileHeader({
   const initials = profile.username.substring(0, 2).toUpperCase();
   const joinYear = new Date(profile.createdAt).getFullYear();
   const [isBlocking, setIsBlocking] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
-  const handleBlock = async () => {
+  const handleToggleBlock = async () => {
     setIsBlocking(true);
     try {
-      await blockUser(profile.username);
-      toast.success(`Blocked ${profile.username}`);
+      if (isBlocked) {
+        await unblockUser(profile.username);
+        setIsBlocked(false);
+        toast.success(`Unblocked ${profile.username}`);
+      } else {
+        await blockUser(profile.username);
+        setIsBlocked(true);
+        toast.success(`Blocked ${profile.username}`);
+      }
     } catch {
-      toast.error("Failed to block user");
+      toast.error(isBlocked ? "Failed to unblock user" : "Failed to block user");
     } finally {
       setIsBlocking(false);
     }
@@ -82,7 +90,7 @@ export function ProfileHeader({
               {displayName}
             </h1>
             {profile.firstName && profile.lastName && (
-              <p className="text-[13px] text-foreground/40 mt-0.5">
+              <p className="text-[13px] text-foreground/60 mt-0.5">
                 @{profile.username}
               </p>
             )}
@@ -91,9 +99,9 @@ export function ProfileHeader({
           {isOwnProfile ? (
             <Link
               href="/settings"
-              className="flex items-center gap-1.5 text-[12px] text-foreground/40 hover:text-foreground/70 bg-card border border-brand-purple/20 hover:border-brand-purple/35 rounded-lg px-3 py-1.5 transition-all shrink-0"
+              className="flex items-center gap-1.5 text-[12px] text-foreground/60 hover:text-foreground/80 bg-card border border-brand-purple/20 hover:border-brand-purple/35 rounded-lg px-3 py-1.5 transition-colors motion-reduce:transition-none shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Settings className="h-3.5 w-3.5" />
+              <Settings className="h-3.5 w-3.5" aria-hidden="true" />
               Edit profile
             </Link>
           ) : (
@@ -109,18 +117,18 @@ export function ProfileHeader({
                   <button
                     aria-label="More options"
                     disabled={isBlocking}
-                    className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/40 hover:text-foreground transition-colors disabled:opacity-50"
+                    className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/60 hover:text-foreground transition-colors motion-reduce:transition-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background border-brand-purple/20">
                   <DropdownMenuItem
-                    onClick={() => void handleBlock()}
+                    onClick={() => void handleToggleBlock()}
                     className="cursor-pointer gap-2 text-brand-red focus:text-brand-red focus:bg-brand-red/5"
                   >
-                    <Ban className="h-3.5 w-3.5" />
-                    Block user
+                    <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                    {isBlocked ? "Unblock user" : "Block user"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -134,8 +142,8 @@ export function ProfileHeader({
           </p>
         )}
 
-        <p className="flex items-center gap-1.5 text-[11px] text-foreground/25 mt-2">
-          <Calendar className="h-3 w-3" />
+        <p className="flex items-center gap-1.5 text-[11px] text-foreground/60 mt-2">
+          <Calendar className="h-3 w-3" aria-hidden="true" />
           Member since {joinYear}
         </p>
       </div>

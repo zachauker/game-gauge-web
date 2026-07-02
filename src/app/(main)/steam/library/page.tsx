@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from "@/store/auth";
-import { SteamLibraryCard } from "@/components/steam/steam-library-card";
+import { SteamLibraryCard, SteamLibraryCardSkeleton } from "@/components/steam/steam-library-card";
 import { SyncButton, SyncStatusBar } from "@/components/steam/sync-button";
 import {
   SteamLibraryEntry,
@@ -23,10 +23,8 @@ import {
   SteamSyncResult,
   getSteamLibrary,
   getRecentlyPlayed,
-  formatPlaytimeCompact,
 } from "@/lib/steam";
 import {
-  Loader2,
   LayoutGrid,
   LayoutList,
   ChevronLeft,
@@ -34,7 +32,6 @@ import {
   Library,
   Clock,
   Gamepad2,
-  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -159,11 +156,6 @@ export default function SteamLibraryPage() {
     setPage(1);
   };
 
-  // Compute aggregate stats from sync status
-  const totalPlaytime = syncStatus
-    ? entries.reduce((sum, e) => sum + e.playtimeForever, 0)
-    : 0;
-
   // ── No Steam linked state ──
   if (!isLoading && syncStatus === null) {
     return (
@@ -171,9 +163,9 @@ export default function SteamLibraryPage() {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-lg mx-auto text-center">
             <div className="h-20 w-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
-              <Gamepad2 className="h-10 w-10 text-muted-foreground" />
+              <Gamepad2 className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-bold mb-3">Connect Your Steam Account</h1>
+            <h1 className="text-2xl font-medium tracking-tight text-foreground mb-3">Connect Your Steam Account</h1>
             <p className="text-muted-foreground mb-8">
               Link your Steam account to sync your game library, track playtime,
               and see your games matched to Game Gauge.
@@ -194,9 +186,9 @@ export default function SteamLibraryPage() {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-lg mx-auto text-center">
             <div className="h-20 w-20 mx-auto mb-6 rounded-2xl bg-muted flex items-center justify-center">
-              <Library className="h-10 w-10 text-muted-foreground" />
+              <Library className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
             </div>
-            <h1 className="text-3xl font-bold mb-3">Sync Your Steam Library</h1>
+            <h1 className="text-2xl font-medium tracking-tight text-foreground mb-3">Sync Your Steam Library</h1>
             <p className="text-muted-foreground mb-8">
               Your Steam account is linked! Sync your library to see your games
               here with playtime tracking and Game Gauge integration.
@@ -219,8 +211,8 @@ export default function SteamLibraryPage() {
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-3">
-                <Library className="h-8 w-8 text-primary" />
+              <h1 className="text-2xl font-medium tracking-tight text-foreground flex items-center gap-3">
+                <Library className="h-6 w-6 text-primary" aria-hidden="true" />
                 Steam Library
               </h1>
               {syncStatus && (
@@ -250,7 +242,7 @@ export default function SteamLibraryPage() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="library" className="flex items-center gap-2">
-              <Library className="h-4 w-4" />
+              <Library className="h-4 w-4" aria-hidden="true" />
               Full Library
               {total > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">
@@ -259,7 +251,7 @@ export default function SteamLibraryPage() {
               )}
             </TabsTrigger>
             <TabsTrigger value="recent" className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-4 w-4" aria-hidden="true" />
               Recently Played
               {recentEntries.length > 0 && (
                 <Badge variant="secondary" className="ml-1 text-xs">
@@ -305,11 +297,12 @@ export default function SteamLibraryPage() {
                 <Button
                   variant="outline"
                   size="sm"
+                  aria-label={sortOrder === "desc" ? "Sort descending" : "Sort ascending"}
                   onClick={() =>
                     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
                   }
                 >
-                  {sortOrder === "desc" ? "↓" : "↑"}
+                  <span aria-hidden="true">{sortOrder === "desc" ? "↓" : "↑"}</span>
                 </Button>
               </div>
 
@@ -319,25 +312,39 @@ export default function SteamLibraryPage() {
                   variant={viewMode === "grid" ? "secondary" : "ghost"}
                   size="icon"
                   className="h-8 w-8"
+                  aria-label="Grid view"
+                  aria-pressed={viewMode === "grid"}
                   onClick={() => setViewMode("grid")}
                 >
-                  <LayoutGrid className="h-4 w-4" />
+                  <LayoutGrid className="h-4 w-4" aria-hidden="true" />
                 </Button>
                 <Button
                   variant={viewMode === "list" ? "secondary" : "ghost"}
                   size="icon"
                   className="h-8 w-8"
+                  aria-label="List view"
+                  aria-pressed={viewMode === "list"}
                   onClick={() => setViewMode("list")}
                 >
-                  <LayoutList className="h-4 w-4" />
+                  <LayoutList className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </div>
             </div>
 
             {/* Loading */}
             {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <div
+                role="status"
+                aria-label="Loading Steam library"
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+                    : "space-y-2"
+                }
+              >
+                {Array.from({ length: viewMode === "grid" ? 8 : 6 }).map((_, i) => (
+                  <SteamLibraryCardSkeleton key={i} view={viewMode} />
+                ))}
               </div>
             ) : entries.length === 0 ? (
               <Card>
@@ -386,7 +393,7 @@ export default function SteamLibraryPage() {
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
                     >
-                      <ChevronLeft className="mr-1 h-4 w-4" />
+                      <ChevronLeft className="mr-1 h-4 w-4" aria-hidden="true" />
                       Previous
                     </Button>
                     <span className="text-sm text-muted-foreground">
@@ -399,7 +406,7 @@ export default function SteamLibraryPage() {
                       disabled={page === totalPages}
                     >
                       Next
-                      <ChevronRight className="ml-1 h-4 w-4" />
+                      <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
                     </Button>
                   </div>
                 )}
@@ -410,13 +417,19 @@ export default function SteamLibraryPage() {
           {/* ── Recently Played Tab ── */}
           <TabsContent value="recent">
             {isRecentLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <div
+                role="status"
+                aria-label="Loading recently played games"
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+              >
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SteamLibraryCardSkeleton key={i} view="grid" />
+                ))}
               </div>
             ) : recentEntries.length === 0 ? (
               <Card>
                 <CardContent className="py-16 text-center">
-                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
                   <p className="text-muted-foreground mb-2">
                     No recently played games found.
                   </p>

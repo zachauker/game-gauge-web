@@ -48,15 +48,15 @@ export function FollowButton({
       )}
     >
       {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
       ) : isFollowing ? (
         <>
-          <UserCheck className="mr-1.5 h-4 w-4" />
+          <UserCheck className="mr-1.5 h-4 w-4" aria-hidden="true" />
           Following
         </>
       ) : (
         <>
-          <UserPlus className="mr-1.5 h-4 w-4" />
+          <UserPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
           Follow
         </>
       )}

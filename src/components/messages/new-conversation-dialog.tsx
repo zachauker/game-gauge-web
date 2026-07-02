@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -27,20 +27,28 @@ export function NewConversationDialog({ open, onOpenChange, onCreated }: NewConv
   const [groupName, setGroupName] = useState("");
   const [searching, setSearching] = useState(false);
   const [creating, setCreating] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSearch = async (value: string) => {
+  const handleSearch = (value: string) => {
     setQuery(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
     if (!value.trim()) {
       setResults([]);
       return;
     }
-    setSearching(true);
-    try {
-      const users = await searchUsers(value);
-      setResults(users.filter((u) => !selected.some((s) => s.id === u.id)));
-    } finally {
-      setSearching(false);
-    }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const users = await searchUsers(value);
+        setResults(users.filter((u) => !selected.some((s) => s.id === u.id)));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Couldn't search users");
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
   };
 
   const addUser = (user: UserSearchResult) => {
@@ -90,8 +98,12 @@ export function NewConversationDialog({ open, onOpenChange, onCreated }: NewConv
                   className="flex items-center gap-1 bg-brand-purple/15 text-xs rounded-full px-2.5 py-1"
                 >
                   {user.username}
-                  <button onClick={() => removeUser(user.id)} aria-label={`Remove ${user.username}`}>
-                    <X className="h-3 w-3" />
+                  <button
+                    onClick={() => removeUser(user.id)}
+                    aria-label={`Remove ${user.username}`}
+                    className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <X className="h-3 w-3" aria-hidden="true" />
                   </button>
                 </span>
               ))}
@@ -109,26 +121,31 @@ export function NewConversationDialog({ open, onOpenChange, onCreated }: NewConv
           <Input
             placeholder="Search by username..."
             value={query}
-            onChange={(e) => void handleSearch(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
 
           <div className="max-h-48 overflow-y-auto space-y-1">
-            {searching && <p className="text-xs text-foreground/40 px-1">Searching...</p>}
-            {results.map((user) => (
-              <button
-                key={user.id}
-                onClick={() => addUser(user)}
-                className="flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-foreground/5"
-              >
-                {user.username}
-              </button>
-            ))}
+            {searching ? (
+              <p className="text-xs text-foreground/60 px-1">Searching...</p>
+            ) : results.length === 0 && query.trim() ? (
+              <p className="text-xs text-foreground/60 px-1">No users found</p>
+            ) : (
+              results.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => addUser(user)}
+                  className="flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-md text-sm hover:bg-foreground/5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {user.username}
+                </button>
+              ))
+            )}
           </div>
         </div>
 
         <DialogFooter>
           <Button onClick={() => void handleCreate()} disabled={selected.length === 0 || creating}>
-            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start"}
+            {creating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Start"}
           </Button>
         </DialogFooter>
       </DialogContent>

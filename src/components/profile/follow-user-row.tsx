@@ -15,7 +15,10 @@ export function FollowUserRow({ user, showFollowButton }: FollowUserRowProps) {
 
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg bg-card border border-brand-purple/10">
-      <Link href={`/users/${user.username}`} className="shrink-0">
+      <Link
+        href={`/users/${user.username}`}
+        className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
         <div className="h-9 w-9 rounded-full bg-brand-purple/25 border border-brand-purple/20 flex items-center justify-center overflow-hidden">
           {user.avatar ? (
             <Image
@@ -34,13 +37,16 @@ export function FollowUserRow({ user, showFollowButton }: FollowUserRowProps) {
       </Link>
 
       <div className="flex-1 min-w-0">
-        <Link href={`/users/${user.username}`}>
-          <p className="text-[13px] font-medium text-foreground/80 hover:text-foreground truncate transition-colors">
+        <Link
+          href={`/users/${user.username}`}
+          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <p className="text-[13px] font-medium text-foreground/80 hover:text-foreground truncate transition-colors motion-reduce:transition-none">
             {user.username}
           </p>
         </Link>
         {user.bio && (
-          <p className="text-[11px] text-foreground/35 truncate mt-0.5">
+          <p className="text-[11px] text-foreground/60 truncate mt-0.5">
             {user.bio}
           </p>
         )}

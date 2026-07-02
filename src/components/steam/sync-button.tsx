@@ -67,12 +67,12 @@ export function SyncButton({
       >
         {isSyncing ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
             {variant === "full" ? "Syncing library…" : "Syncing recent…"}
           </>
         ) : (
           <>
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
             {variant === "full" ? "Sync Library" : "Sync Recent"}
           </>
         )}
@@ -104,17 +104,14 @@ export function SyncStatusBar({ syncStatus }: SyncStatusBarProps) {
       </Badge>
       <Badge
         variant="secondary"
-        className="text-xs bg-green-500/10 text-green-600 border-green-500/20"
+        className="text-xs bg-brand-teal/10 text-brand-teal border-brand-teal/20"
       >
-        <CheckCircle2 className="mr-1 h-3 w-3" />
+        <CheckCircle2 className="mr-1 h-3 w-3" aria-hidden="true" />
         {syncStatus.matchedGames.toLocaleString()} linked ({matchRate}%)
       </Badge>
       {syncStatus.unmatchedGames > 0 && (
-        <Badge
-          variant="secondary"
-          className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/20"
-        >
-          <AlertCircle className="mr-1 h-3 w-3" />
+        <Badge variant="outline" className="text-xs text-foreground/60">
+          <AlertCircle className="mr-1 h-3 w-3" aria-hidden="true" />
           {syncStatus.unmatchedGames.toLocaleString()} unlinked
         </Badge>
       )}

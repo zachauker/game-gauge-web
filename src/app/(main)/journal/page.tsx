@@ -32,13 +32,13 @@ export default function JournalPage() {
 
           {/* ── Header ── */}
           <div className="mb-8">
-            <p className="text-[11px] uppercase tracking-[0.1em] text-foreground/40 mb-1">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-foreground/60 mb-1">
               Journal
             </p>
             <h1 className="text-2xl font-medium tracking-tight text-foreground">
               {user.username}
             </h1>
-            <p className="text-[13px] text-foreground/40 mt-1">
+            <p className="text-[13px] text-foreground/60 mt-1">
               Everything you've logged, in order.
             </p>
           </div>
@@ -52,9 +52,9 @@ export default function JournalPage() {
             emptyAction={
               <Link
                 href="/search"
-                className="inline-flex items-center gap-1.5 mt-4 text-[12px] text-brand-purple hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1.5 mt-4 text-[12px] text-brand-purple hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Search className="h-3.5 w-3.5" />
+                <Search className="h-3.5 w-3.5" aria-hidden="true" />
                 Find a game to log
               </Link>
             }

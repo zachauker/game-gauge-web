@@ -27,13 +27,13 @@ const EVENT_META: Record<
   ActivityEvent["type"],
   { icon: React.ReactNode; colourClass: string; bgClass: string; label: string }
 > = {
-  RATED_GAME:     { icon: <Star className="h-3 w-3" />,         colourClass: "text-brand-amber",      bgClass: "bg-brand-amber/10 border-brand-amber/20",    label: "Rating"    },
-  REVIEWED_GAME:  { icon: <MessageSquare className="h-3 w-3" />, colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Review"    },
-  COMPLETED_GAME: { icon: <Trophy className="h-3 w-3" />,        colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Completed" },
-  STARTED_GAME:   { icon: <Gamepad2 className="h-3 w-3" />,      colourClass: "text-brand-purple",     bgClass: "bg-brand-purple/10 border-brand-purple/20",  label: "Playing"   },
-  ADDED_TO_LIST:  { icon: <ListPlus className="h-3 w-3" />,      colourClass: "text-brand-amber/70",   bgClass: "bg-brand-amber/8 border-brand-amber/15",     label: "Added"     },
-  CREATED_LIST:   { icon: <List className="h-3 w-3" />,          colourClass: "text-brand-purple/70",  bgClass: "bg-brand-purple/8 border-brand-purple/15",   label: "New List"  },
-  FOLLOWED_USER:  { icon: <UserPlus className="h-3 w-3" />,      colourClass: "text-brand-pink",       bgClass: "bg-brand-pink/10 border-brand-pink/20",      label: "Follow"    },
+  RATED_GAME:     { icon: <Star className="h-3 w-3" aria-hidden="true" />,         colourClass: "text-brand-amber",      bgClass: "bg-brand-amber/10 border-brand-amber/20",    label: "Rating"    },
+  REVIEWED_GAME:  { icon: <MessageSquare className="h-3 w-3" aria-hidden="true" />, colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Review"    },
+  COMPLETED_GAME: { icon: <Trophy className="h-3 w-3" aria-hidden="true" />,        colourClass: "text-brand-teal",       bgClass: "bg-brand-teal/10 border-brand-teal/20",      label: "Completed" },
+  STARTED_GAME:   { icon: <Gamepad2 className="h-3 w-3" aria-hidden="true" />,      colourClass: "text-brand-purple",     bgClass: "bg-brand-purple/10 border-brand-purple/20",  label: "Playing"   },
+  ADDED_TO_LIST:  { icon: <ListPlus className="h-3 w-3" aria-hidden="true" />,      colourClass: "text-brand-amber/70",   bgClass: "bg-brand-amber/8 border-brand-amber/15",     label: "Added"     },
+  CREATED_LIST:   { icon: <List className="h-3 w-3" aria-hidden="true" />,          colourClass: "text-brand-purple/70",  bgClass: "bg-brand-purple/8 border-brand-purple/15",   label: "New List"  },
+  FOLLOWED_USER:  { icon: <UserPlus className="h-3 w-3" aria-hidden="true" />,      colourClass: "text-brand-pink",       bgClass: "bg-brand-pink/10 border-brand-pink/20",      label: "Follow"    },
 };
 
 interface ActivityEventCardProps {
@@ -56,7 +56,7 @@ export function ActivityEventCard({
   const [showShareDialog, setShowShareDialog] = useState(false);
 
   return (
-    <article className="rounded-lg border border-brand-purple/15 bg-card p-3 hover:border-brand-purple/30 transition-colors">
+    <article className="rounded-lg border border-brand-purple/15 bg-card p-3 hover:border-brand-purple/30 transition-colors motion-reduce:transition-none">
       <div className="flex gap-3">
 
         {/* ── Avatar ── */}
@@ -79,11 +79,11 @@ export function ActivityEventCard({
             <p className="text-[13px] leading-snug">
               <Link
                 href={`/users/${event.user.username}`}
-                className="font-medium text-foreground hover:text-brand-purple transition-colors"
+                className="font-medium text-foreground hover:text-brand-purple transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {actorLabel}
               </Link>{" "}
-              <span className="text-foreground/50">{description}</span>
+              <span className="text-foreground/60">{description}</span>
             </p>
 
             <div className="flex items-center gap-1.5 shrink-0">
@@ -94,7 +94,7 @@ export function ActivityEventCard({
               </span>
               <time
                 dateTime={event.createdAt}
-                className="text-[11px] text-foreground/30 whitespace-nowrap"
+                className="text-[11px] text-foreground/50 whitespace-nowrap"
                 title={new Date(event.createdAt).toLocaleString()}
               >
                 {timeAgo(event.createdAt)}
@@ -104,21 +104,21 @@ export function ActivityEventCard({
 
           {/* Review excerpt */}
           {excerpt && (
-            <p className="text-[12px] text-foreground/40 line-clamp-2 leading-relaxed italic">
+            <p className="text-[12px] text-foreground/60 line-clamp-2 leading-relaxed italic">
               &ldquo;{excerpt}&rdquo;
             </p>
           )}
 
           {/* List name for CREATED_LIST */}
           {listName && event.type === "CREATED_LIST" && (
-            <p className="text-[12px] text-foreground/40">{listName}</p>
+            <p className="text-[12px] text-foreground/60">{listName}</p>
           )}
 
           {/* Followed user link */}
           {event.type === "FOLLOWED_USER" && followedUsername && (
             <Link
               href={`/users/${followedUsername}`}
-              className="text-[12px] font-medium text-brand-purple hover:text-foreground transition-colors"
+              className="text-[12px] font-medium text-brand-purple hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               @{followedUsername}
             </Link>
@@ -128,9 +128,9 @@ export function ActivityEventCard({
           {deepLink && (
             <Link
               href={deepLink}
-              className="inline-flex items-center gap-1 text-[11px] text-foreground/35 hover:text-brand-purple transition-colors"
+              className="inline-flex items-center gap-1 text-[11px] text-foreground/60 hover:text-brand-purple transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
               {event.type === "REVIEWED_GAME"                                                                  && "Read review"}
               {event.type === "CREATED_LIST"                                                                   && "View list"}
               {(event.type === "ADDED_TO_LIST" || event.type === "STARTED_GAME" || event.type === "COMPLETED_GAME") && "View list"}
@@ -150,9 +150,9 @@ export function ActivityEventCard({
             <button
               onClick={() => setShowShareDialog(true)}
               aria-label="Share this activity"
-              className="text-foreground/30 hover:text-foreground/60 transition-colors"
+              className="text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Share2 className="h-3.5 w-3.5" />
+              <Share2 className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -171,7 +171,7 @@ export function ActivityEventCard({
                 />
               ) : (
                 <div className="h-full w-full bg-brand-purple/10 flex items-center justify-center">
-                  <Gamepad2 className="h-4 w-4 text-foreground/20" />
+                  <Gamepad2 className="h-4 w-4 text-foreground/30" aria-hidden="true" />
                 </div>
               )}
             </div>

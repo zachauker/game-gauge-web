@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,17 @@ export function CreateListDialog({
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Resync form state whenever the dialog (re)opens, so stale edits from a
+  // previous open (or a since-changed initialData) never leak through.
+  useEffect(() => {
+    if (open) {
+      setName(initialData?.name || "");
+      setDescription(initialData?.description || "");
+      setIsPublic(initialData?.isPublic ?? true);
+      setError("");
+    }
+  }, [open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

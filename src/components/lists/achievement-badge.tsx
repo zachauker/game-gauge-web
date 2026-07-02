@@ -50,10 +50,11 @@ export function AchievementBadge({
       disabled={isSyncing}
       className={cn(
         "group inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
-        "text-xs font-medium transition-all",
+        "text-xs font-medium transition-all motion-reduce:transition-none",
         "disabled:opacity-60 disabled:cursor-not-allowed",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         achievements
-          ? "border-yellow-500/30 bg-yellow-500/5 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/10"
+          ? "border-brand-amber/30 bg-brand-amber/5 text-brand-amber hover:bg-brand-amber/10"
           : "border-muted-foreground/20 bg-muted/50 text-muted-foreground hover:bg-muted",
         className
       )}
@@ -66,9 +67,9 @@ export function AchievementBadge({
       }
     >
       {isSyncing ? (
-        <Loader2 className="h-3 w-3 animate-spin" />
+        <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
       ) : (
-        <Trophy className="h-3 w-3" />
+        <Trophy className="h-3 w-3" aria-hidden="true" />
       )}
 
       {achievements ? (
@@ -81,7 +82,10 @@ export function AchievementBadge({
           )}
           {/* Stale indicator */}
           {isStale && !isSyncing && (
-            <RefreshCw className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 transition-opacity" />
+            <RefreshCw
+              aria-hidden="true"
+              className="h-2.5 w-2.5 opacity-40 group-hover:opacity-100 transition-opacity motion-reduce:transition-none"
+            />
           )}
         </>
       ) : (

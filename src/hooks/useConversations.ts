@@ -9,14 +9,17 @@ export function useConversations() {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
     try {
       const page = await fetchConversations();
       setConversations(page.conversations);
+      setError(false);
     } catch (err) {
       console.error("Failed to load conversations:", err);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -62,5 +65,5 @@ export function useConversations() {
     };
   }, [socket, reload, reloadUnread]);
 
-  return { conversations, unreadCount, loading, reload };
+  return { conversations, unreadCount, loading, error, reload };
 }

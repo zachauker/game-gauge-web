@@ -5,10 +5,10 @@ import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {MainLayout} from "@/components/layout/main-layout";
 import {AutoImportGameCard} from "@/components/games/auto-import-game-card";
+import {Button} from "@/components/ui/button";
 import {useAuthStore} from "@/store/auth";
-import {getPopularGames, getRecentGames} from "@/lib/search";
 import {api} from "@/lib/api";
-import {IGDBGame} from "@/lib/api";
+import {IGDBGame, User} from "@/lib/api";
 import {
     Search,
     ArrowRight,
@@ -52,10 +52,10 @@ function SectionHeader({
             {href && (
                 <Link
                     href={href}
-                    className="flex items-center gap-1 text-[12px] text-foreground/50 hover:text-foreground/80 transition-colors"
+                    className="flex items-center gap-1 text-[12px] text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                     View all
-                    <ArrowRight className="h-3 w-3"/>
+                    <ArrowRight className="h-3 w-3" aria-hidden="true"/>
                 </Link>
             )}
         </div>
@@ -73,7 +73,7 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                         rated{" "}
                         <Link
                             href={`/games/${event.game?.slug}`}
-                            className="text-foreground/80 italic hover:text-foreground transition-colors"
+                            className="text-foreground/80 italic hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                             {event.game?.title}
                         </Link>{" "}
@@ -88,7 +88,7 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                         reviewed{" "}
                         <Link
                             href={`/games/${event.game?.slug}`}
-                            className="text-foreground/80 italic hover:text-foreground transition-colors"
+                            className="text-foreground/80 italic hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                             {event.game?.title}
                         </Link>
@@ -100,7 +100,7 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                         added{" "}
                         <Link
                             href={`/games/${event.game?.slug}`}
-                            className="text-foreground/80 italic hover:text-foreground transition-colors"
+                            className="text-foreground/80 italic hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                         >
                             {event.game?.title}
                         </Link>{" "}
@@ -143,7 +143,7 @@ function ActivityItem({event}: { event: ActivityEvent }) {
                 <p className="text-[12px] text-foreground/60 leading-snug line-clamp-2">
                     <Link
                         href={`/users/${event.user.username}`}
-                        className="text-foreground/80 font-medium hover:text-foreground transition-colors"
+                        className="text-foreground/80 font-medium hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                         {event.user.username}
                     </Link>{" "}
@@ -169,7 +169,7 @@ function GameGridSkeleton() {
             className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
         >
             {Array.from({length: 6}).map((_, i) => (
-                <div key={i} className="aspect-[3/4] rounded-lg bg-card border border-brand-purple/10 animate-pulse"/>
+                <div key={i} className="aspect-[3/4] rounded-lg bg-card border border-brand-purple/10 animate-pulse motion-reduce:animate-none"/>
             ))}
         </div>
     );
@@ -181,7 +181,7 @@ function AuthenticatedHero({
                                user,
                                stats,
                            }: {
-    user: any;
+    user: User | null;
     stats: UserStats | null;
 }) {
     const hour = new Date().getHours();
@@ -247,37 +247,35 @@ function GuestHero() {
                 {/* Inline search */}
                 <form onSubmit={handleSearch} className="flex items-center gap-2 mb-6">
                     <div
-                        className="flex-1 flex items-center gap-3 bg-card border border-brand-purple/25 hover:border-brand-purple/50 focus-within:border-brand-purple/60 rounded-lg px-4 py-3 transition-colors">
-                        <Search className="h-4 w-4 text-foreground/30 shrink-0"/>
+                        className="flex-1 flex items-center gap-3 bg-card border border-brand-purple/25 hover:border-brand-purple/50 focus-within:border-brand-purple/60 rounded-lg px-4 py-3 transition-colors motion-reduce:transition-none">
+                        <Search className="h-4 w-4 text-foreground/30 shrink-0" aria-hidden="true"/>
                         <input
                             type="text"
+                            aria-label="Search for a game"
                             placeholder="Search for a game to get started…"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             className="flex-1 bg-transparent text-[14px] text-foreground placeholder:text-foreground/50 outline-none"
                         />
                     </div>
-                    <button
-                        type="submit"
-                        className="bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-5 py-3 rounded-lg transition-colors shrink-0"
-                    >
+                    <Button type="submit" size="lg" className="text-[13px] px-5 py-3 h-auto shrink-0">
                         Search
-                    </button>
+                    </Button>
                 </form>
 
                 {/* CTAs */}
                 <div className="flex items-center gap-4">
                     <Link
                         href="/register"
-                        className="text-[13px] font-medium text-foreground/70 hover:text-foreground transition-colors flex items-center gap-1.5"
+                        className="text-[13px] font-medium text-foreground/70 hover:text-foreground transition-colors motion-reduce:transition-none flex items-center gap-1.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                         Create a free account
-                        <ArrowRight className="h-3.5 w-3.5"/>
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true"/>
                     </Link>
-                    <span className="text-foreground/20">·</span>
+                    <span className="text-foreground/20" aria-hidden="true">·</span>
                     <Link
                         href="/login"
-                        className="text-[13px] text-foreground/50 hover:text-foreground/70 transition-colors"
+                        className="text-[13px] text-foreground/50 hover:text-foreground/70 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                     >
                         Sign in
                     </Link>
@@ -303,15 +301,17 @@ export default function HomePage() {
     const [recentError, setRecentError] = useState(false);
 
     useEffect(() => {
-        getPopularGames(6)
-            .then((games) => setPopularGames(games))
+        api
+            .get("/igdb/popular", {params: {limit: 6}})
+            .then((res) => setPopularGames(res.data.data || []))
             .catch(() => setPopularError(true))
             .finally(() => setLoadingPopular(false));
     }, []);
 
     useEffect(() => {
-        getRecentGames(6)
-            .then((games) => setRecentGames(games))
+        api
+            .get("/igdb/recent", {params: {limit: 6}})
+            .then((res) => setRecentGames(res.data.data || []))
             .catch(() => setRecentError(true))
             .finally(() => setLoadingRecent(false));
     }, []);
@@ -357,7 +357,7 @@ export default function HomePage() {
                                 <p className="text-[13px] text-foreground/50 py-4">
                                     Couldn't load games right now —{" "}
                                     <Link href="/search"
-                                          className="text-brand-purple hover:text-foreground/80 transition-colors">
+                                          className="text-brand-purple hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                                         browse all games
                                     </Link>
                                 </p>
@@ -383,7 +383,7 @@ export default function HomePage() {
                                 <p className="text-[13px] text-foreground/50 py-4">
                                     Couldn't load games right now —{" "}
                                     <Link href="/search"
-                                          className="text-brand-purple hover:text-foreground/80 transition-colors">
+                                          className="text-brand-purple hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background">
                                         browse all games
                                     </Link>
                                 </p>
@@ -411,7 +411,7 @@ export default function HomePage() {
                                     >
                                         {Array.from({length: 4}).map((_, i) => (
                                             <div key={i}
-                                                 className="h-8 rounded bg-brand-purple/10 animate-pulse"/>
+                                                 className="h-8 rounded bg-brand-purple/10 animate-pulse motion-reduce:animate-none"/>
                                         ))}
                                     </div>
                                 ) : activity.length > 0 ? (
@@ -422,7 +422,7 @@ export default function HomePage() {
                                     </ul>
                                 ) : (
                                     <div className="py-8 text-center">
-                                        <Gamepad2 className="h-6 w-6 text-foreground/20 mx-auto mb-3"/>
+                                        <Gamepad2 className="h-6 w-6 text-foreground/20 mx-auto mb-3" aria-hidden="true"/>
                                         <p className="text-[12px] text-foreground/50 leading-relaxed">
                                             No activity yet.
                                             <br/>
@@ -430,7 +430,7 @@ export default function HomePage() {
                                         </p>
                                         <Link
                                             href="/search?tab=users"
-                                            className="inline-block mt-4 text-[12px] text-brand-purple hover:text-foreground transition-colors"
+                                            className="inline-block mt-4 text-[12px] text-brand-purple hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                         >
                                             Find people to follow →
                                         </Link>
@@ -439,10 +439,10 @@ export default function HomePage() {
                             </div>
 
                             {/* Upsell: connect Steam */}
-                            {!(user as any)?.steamId && (
+                            {!user?.steamId && (
                                 <div className="mt-4 bg-card border border-brand-teal/20 rounded-lg p-4">
                                     <div className="flex items-start gap-3">
-                                        <Clock className="h-4 w-4 text-brand-teal mt-0.5 shrink-0"/>
+                                        <Clock className="h-4 w-4 text-brand-teal mt-0.5 shrink-0" aria-hidden="true"/>
                                         <div>
                                             <p className="text-[12px] font-medium text-foreground/70 mb-1">
                                                 Connect Steam
@@ -452,7 +452,7 @@ export default function HomePage() {
                                             </p>
                                             <Link
                                                 href="/settings"
-                                                className="text-[11px] text-brand-teal hover:text-brand-teal/80 transition-colors"
+                                                className="text-[11px] text-brand-teal hover:text-brand-teal/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                             >
                                                 Connect your account →
                                             </Link>

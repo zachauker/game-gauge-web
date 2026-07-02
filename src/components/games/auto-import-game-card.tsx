@@ -6,6 +6,7 @@ import { IGDBGame } from "@/lib/api";
 import { GameCard } from "./game-card";
 import { Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 interface AutoImportGameCardProps {
   game: IGDBGame;
@@ -30,7 +31,12 @@ export function AutoImportGameCard({ game }: AutoImportGameCardProps) {
       const response = await api.post("/igdb/import", { igdbId: game.id });
       const importedGame = response.data.data;
       router.push(`/games/${importedGame.slug}`);
-    } catch {
+    } catch (error: any) {
+      const message =
+        error.response?.data?.error?.message ||
+        error.message ||
+        "Couldn't open this game right now";
+      toast.error(message);
       setIsImporting(false);
     }
   };

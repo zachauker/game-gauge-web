@@ -51,29 +51,29 @@ const COMPLETION_OPTIONS: {
     value: "beaten",
     label: "Beaten",
     description: "Finished the main story",
-    icon: <Sword className="h-5 w-5" />,
-    color: "text-blue-500",
+    icon: <Sword className="h-5 w-5" aria-hidden="true" />,
+    color: "text-brand-teal",
   },
   {
     value: "100pct",
     label: "100%",
     description: "Full completion — all achievements",
-    icon: <Sparkles className="h-5 w-5" />,
-    color: "text-yellow-500",
+    icon: <Sparkles className="h-5 w-5" aria-hidden="true" />,
+    color: "text-brand-amber",
   },
   {
     value: "abandoned",
     label: "Abandoned",
     description: "Put it down for good",
-    icon: <X className="h-5 w-5" />,
-    color: "text-red-500",
+    icon: <X className="h-5 w-5" aria-hidden="true" />,
+    color: "text-destructive",
   },
   {
     value: "endless",
     label: "Endless",
     description: "No real ending — just moved on",
-    icon: <Clock className="h-5 w-5" />,
-    color: "text-purple-500",
+    icon: <Clock className="h-5 w-5" aria-hidden="true" />,
+    color: "text-primary",
   },
 ];
 
@@ -169,7 +169,7 @@ export function CompleteGameDialog({
       <DialogHeader>
         <div className="flex items-center justify-center mb-3">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Trophy className="h-6 w-6 text-primary" />
+            <Trophy className="h-6 w-6 text-primary" aria-hidden="true" />
           </div>
         </div>
         <DialogTitle className="text-center">How did it go?</DialogTitle>
@@ -213,7 +213,7 @@ export function CompleteGameDialog({
           disabled={!completionType}
         >
           Next
-          <ChevronRight className="ml-1 h-4 w-4" />
+          <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
         </Button>
       </DialogFooter>
     </>
@@ -228,8 +228,8 @@ export function CompleteGameDialog({
       <>
         <DialogHeader>
           <div className="flex items-center justify-center mb-3">
-            <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
-              <Star className="h-6 w-6 text-yellow-500" />
+            <div className="w-12 h-12 rounded-full bg-brand-amber/10 flex items-center justify-center">
+              <Star className="h-6 w-6 text-brand-amber" aria-hidden="true" />
             </div>
           </div>
           <DialogTitle className="text-center">How would you rate it?</DialogTitle>
@@ -248,14 +248,15 @@ export function CompleteGameDialog({
                 onMouseEnter={() => setHoveredRating(score)}
                 onMouseLeave={() => setHoveredRating(null)}
                 onClick={() => setRating(score === rating ? null : score)}
-                className="p-0.5 transition-transform hover:scale-125 focus:outline-none"
+                className="p-0.5 transition-transform motion-reduce:transition-none hover:scale-125 motion-reduce:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                 aria-label={`Rate ${score}`}
               >
                 <Star
+                  aria-hidden="true"
                   className={cn(
-                    "h-7 w-7 transition-colors",
+                    "h-7 w-7 transition-colors motion-reduce:transition-none",
                     displayRating !== null && score <= displayRating
-                      ? "text-yellow-400 fill-yellow-400"
+                      ? "text-brand-amber fill-brand-amber"
                       : "text-muted-foreground/30"
                   )}
                 />
@@ -266,7 +267,7 @@ export function CompleteGameDialog({
           {/* Label */}
           <div className="text-center h-5">
             {displayRating !== null && (
-              <span className="text-sm font-semibold text-yellow-500 tabular-nums">
+              <span className="text-sm font-semibold text-brand-amber tabular-nums">
                 {displayRating} / 10
               </span>
             )}
@@ -292,7 +293,7 @@ export function CompleteGameDialog({
           </Button>
           <Button onClick={() => setStep(3)} disabled={rating === null}>
             Next
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ChevronRight className="ml-1 h-4 w-4" aria-hidden="true" />
           </Button>
         </DialogFooter>
       </>
@@ -310,8 +311,8 @@ export function CompleteGameDialog({
       <>
         <DialogHeader>
           <div className="flex items-center justify-center mb-3">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-              <MessageSquare className="h-6 w-6 text-blue-500" />
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageSquare className="h-6 w-6 text-primary" aria-hidden="true" />
             </div>
           </div>
           <DialogTitle className="text-center">Leave a review?</DialogTitle>
@@ -362,13 +363,13 @@ export function CompleteGameDialog({
             )}
             {rating !== null && (
               <div className="flex items-center gap-2">
-                <Star className="h-4 w-4 text-yellow-500" />
+                <Star className="h-4 w-4 text-brand-amber" aria-hidden="true" />
                 <span>{rating}/10 rating will be saved</span>
               </div>
             )}
             {!hasReview && (
               <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4" aria-hidden="true" />
                 <span>No review (skipped)</span>
               </div>
             )}
@@ -392,12 +393,12 @@ export function CompleteGameDialog({
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                 Saving…
               </>
             ) : (
               <>
-                <Trophy className="mr-2 h-4 w-4" />
+                <Trophy className="mr-2 h-4 w-4" aria-hidden="true" />
                 {hasReview ? "Complete & Review" : "Mark Complete"}
               </>
             )}

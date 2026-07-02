@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MainLayout } from "@/components/layout/main-layout";
 import { ProfileHeader } from "@/components/profile/profile-header";
@@ -42,19 +42,27 @@ function TabButton({
   onClick,
   icon,
   label,
+  id,
+  controls,
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  id: string;
+  controls: string;
 }) {
   return (
     <button
+      id={id}
+      role="tab"
+      aria-selected={active}
+      aria-controls={controls}
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] border-b-2 -mb-px transition-colors ${
+      className={`flex items-center gap-1.5 px-4 py-2.5 text-[13px] border-b-2 -mb-px transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         active
           ? "border-brand-amber text-foreground/90 font-medium"
-          : "border-transparent text-foreground/40 hover:text-foreground/70"
+          : "border-transparent text-foreground/60 hover:text-foreground/80"
       }`}
     >
       {icon}
@@ -77,7 +85,7 @@ export default function UserProfilePage() {
 
   const isOwnProfile = currentUser?.username === username;
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
     setIsLoading(true);
     setError("");
     Promise.allSettled([
@@ -98,11 +106,15 @@ export default function UserProfilePage() {
     }).finally(() => setIsLoading(false));
   }, [username]);
 
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
   if (isLoading) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-7 w-7 animate-spin text-foreground/20" />
+          <Loader2 className="h-7 w-7 animate-spin text-foreground/30" aria-hidden="true" />
         </div>
       </MainLayout>
     );
@@ -112,15 +124,26 @@ export default function UserProfilePage() {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 py-20 text-center">
-          <p className="text-[14px] text-foreground/40 mb-4">
+          <p className="text-[14px] text-foreground/60 mb-4">
             {error || "This user couldn't be found."}
           </p>
-          <button
-            onClick={() => router.back()}
-            className="text-[13px] text-brand-purple hover:text-foreground/70 transition-colors"
-          >
-            ← Go back
-          </button>
+          <div className="flex items-center justify-center gap-4">
+            {error && (
+              <button
+                onClick={loadProfile}
+                className="text-[13px] text-brand-purple hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Try again
+              </button>
+            )}
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-1 text-[13px] text-foreground/60 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              Go back
+            </button>
+          </div>
         </div>
       </MainLayout>
     );
@@ -131,9 +154,9 @@ export default function UserProfilePage() {
       <div className="container mx-auto px-4 lg:px-8 py-8 max-w-4xl">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-[12px] text-foreground/30 hover:text-foreground/60 transition-colors mb-8"
+          className="flex items-center gap-1.5 text-[12px] text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none mb-8 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronLeft className="h-3.5 w-3.5" />
+          <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Back
         </button>
 
@@ -157,37 +180,47 @@ export default function UserProfilePage() {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center border-b border-brand-purple/15 mb-6">
+        <div role="tablist" className="flex items-center border-b border-brand-purple/15 mb-6">
           <TabButton
+            id="tab-ratings"
+            controls="panel-ratings"
             active={activeTab === "ratings"}
             onClick={() => setActiveTab("ratings")}
-            icon={<Star className="h-3.5 w-3.5" />}
+            icon={<Star className="h-3.5 w-3.5" aria-hidden="true" />}
             label="Ratings"
           />
           <TabButton
+            id="tab-reviews"
+            controls="panel-reviews"
             active={activeTab === "reviews"}
             onClick={() => setActiveTab("reviews")}
-            icon={<BookOpen className="h-3.5 w-3.5" />}
+            icon={<BookOpen className="h-3.5 w-3.5" aria-hidden="true" />}
             label="Reviews"
           />
           <TabButton
+            id="tab-activity"
+            controls="panel-activity"
             active={activeTab === "activity"}
             onClick={() => setActiveTab("activity")}
-            icon={<Activity className="h-3.5 w-3.5" />}
+            icon={<Activity className="h-3.5 w-3.5" aria-hidden="true" />}
             label="Activity"
           />
           <TabButton
+            id="tab-lists"
+            controls="panel-lists"
             active={activeTab === "lists"}
             onClick={() => setActiveTab("lists")}
-            icon={<List className="h-3.5 w-3.5" />}
+            icon={<List className="h-3.5 w-3.5" aria-hidden="true" />}
             label="Lists"
           />
         </div>
 
-        {activeTab === "ratings" && <RatingsTab username={username} />}
-        {activeTab === "reviews" && <ReviewsTab username={username} />}
-        {activeTab === "activity" && <ActivityTab username={username} />}
-        {activeTab === "lists" && <ListsTab userId={profile.id} />}
+        <div id={`panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+          {activeTab === "ratings" && <RatingsTab username={username} />}
+          {activeTab === "reviews" && <ReviewsTab username={username} />}
+          {activeTab === "activity" && <ActivityTab username={username} />}
+          {activeTab === "lists" && <ListsTab userId={profile.id} />}
+        </div>
       </div>
     </MainLayout>
   );

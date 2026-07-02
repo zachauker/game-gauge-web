@@ -39,23 +39,18 @@ export interface SearchResponse {
 export async function searchIGDB(filters: SearchFilters): Promise<SearchResponse> {
   const { query = '', page = 1, limit = 20, genreId } = filters;
 
-  try {
-    const response = await api.get('/igdb/search', {
-      params: {
-        q: query,
-        limit,
-        ...(genreId !== undefined && { genreId }),
-      },
-    });
+  const response = await api.get('/igdb/search', {
+    params: {
+      q: query,
+      limit,
+      ...(genreId !== undefined && { genreId }),
+    },
+  });
 
-    return {
-      games: response.data.data || [],
-      total: response.data.data?.length || 0,
-    };
-  } catch (error) {
-    console.error('IGDB search error:', error);
-    return { games: [], total: 0 };
-  }
+  return {
+    games: response.data.data || [],
+    total: response.data.data?.length || 0,
+  };
 }
 
 /**

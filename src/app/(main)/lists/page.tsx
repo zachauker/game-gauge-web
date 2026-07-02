@@ -19,6 +19,16 @@ import { getErrorMessage } from "@/lib/api";
 import type { GameList } from "@/lib/api";
 import { getMyLists, deleteList, createList } from "@/lib/lists";
 import { CreateListDialog } from "@/components/lists/create-list-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 // ─── Default list display config ──────────────────────────────────────────────
@@ -29,17 +39,17 @@ const DEFAULT_LIST_CONFIG: Record<
 > = {
   wishlist: {
     label: "Wishlist",
-    icon: <Heart className="h-5 w-5 text-brand-pink" />,
+    icon: <Heart className="h-5 w-5 text-brand-pink" aria-hidden="true" />,
     description: "Games you want to play",
   },
   playing: {
     label: "Currently Playing",
-    icon: <Gamepad2 className="h-5 w-5 text-brand-purple" />,
+    icon: <Gamepad2 className="h-5 w-5 text-brand-purple" aria-hidden="true" />,
     description: "Games you're actively playing",
   },
   completed: {
     label: "Completed",
-    icon: <Trophy className="h-5 w-5 text-brand-amber" />,
+    icon: <Trophy className="h-5 w-5 text-brand-amber" aria-hidden="true" />,
     description: "Games you've finished",
   },
 };
@@ -49,12 +59,12 @@ const DEFAULT_LIST_CONFIG: Record<
 function VisibilityPill({ isPublic }: { isPublic: boolean }) {
   return isPublic ? (
     <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-teal/10 border border-brand-teal/20 text-brand-teal">
-      <Globe className="h-2.5 w-2.5" />
+      <Globe className="h-2.5 w-2.5" aria-hidden="true" />
       Public
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/20 text-foreground/50">
-      <Lock className="h-2.5 w-2.5" />
+    <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/20 text-foreground/60">
+      <Lock className="h-2.5 w-2.5" aria-hidden="true" />
       Private
     </span>
   );
@@ -68,6 +78,7 @@ export default function ListsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated && user) loadLists();
@@ -96,13 +107,14 @@ export default function ListsPage() {
   };
 
   const handleDeleteList = async (listId: string) => {
-    if (!confirm("Are you sure you want to delete this list?")) return;
     try {
       await deleteList(listId);
       toast.success("List deleted");
       await loadLists();
     } catch (err) {
       toast.error(getErrorMessage(err));
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -113,13 +125,13 @@ export default function ListsPage() {
     return (
       <MainLayout>
         <div className="container mx-auto px-4 lg:px-8 py-20 text-center">
-          <List className="h-8 w-8 text-foreground/20 mx-auto mb-4" />
-          <p className="text-[14px] text-foreground/40 mb-6">
+          <List className="h-8 w-8 text-foreground/30 mx-auto mb-4" aria-hidden="true" />
+          <p className="text-[14px] text-foreground/60 mb-6">
             Sign in to manage your game lists.
           </p>
           <Link
             href="/login"
-            className="inline-block bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors"
+            className="inline-block bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-5 py-2.5 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Sign in
           </Link>
@@ -135,21 +147,21 @@ export default function ListsPage() {
         {/* ── Header ── */}
         <div className="flex items-start justify-between mb-8">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.1em] text-foreground/40 mb-1">
+            <p className="text-[11px] uppercase tracking-[0.1em] text-foreground/60 mb-1">
               Library
             </p>
             <h1 className="text-2xl font-medium tracking-tight text-foreground">
               My Lists
             </h1>
-            <p className="text-[13px] text-foreground/40 mt-1">
+            <p className="text-[13px] text-foreground/60 mt-1">
               Track and organise your game library.
             </p>
           </div>
           <button
             onClick={() => setShowCreateDialog(true)}
-            className="flex items-center gap-2 bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-2 bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             New List
           </button>
         </div>
@@ -163,13 +175,13 @@ export default function ListsPage() {
 
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-6 w-6 animate-spin text-foreground/30" />
+            <Loader2 className="h-6 w-6 animate-spin text-foreground/30" aria-hidden="true" />
           </div>
         ) : (
           <>
             {/* ── Default lists ── */}
             <section className="mb-10">
-              <h2 className="text-[13px] font-medium uppercase tracking-[0.08em] text-foreground/40 mb-4">
+              <h2 className="text-sm font-semibold text-foreground/80 mb-4">
                 Your Library
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -179,16 +191,16 @@ export default function ListsPage() {
                     <Link
                       key={list.id}
                       href={`/lists/${list.id}`}
-                      className="flex items-center gap-4 bg-card border border-brand-purple/15 hover:border-brand-purple/35 rounded-lg p-4 transition-colors group"
+                      className="flex items-center gap-4 bg-card border border-brand-purple/15 hover:border-brand-purple/35 rounded-lg p-4 transition-colors motion-reduce:transition-none group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="shrink-0 w-10 h-10 rounded-full bg-brand-purple/10 flex items-center justify-center">
                         {config?.icon}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[14px] font-medium text-foreground leading-tight truncate group-hover:text-brand-purple transition-colors">
+                        <p className="text-[14px] font-medium text-foreground leading-tight truncate group-hover:text-brand-purple transition-colors motion-reduce:transition-none">
                           {config?.label ?? list.name}
                         </p>
-                        <p className="text-[11px] text-foreground/40 mt-0.5">
+                        <p className="text-[11px] text-foreground/60 mt-0.5">
                           {list._count?.items ?? 0} game{list._count?.items !== 1 ? "s" : ""}
                         </p>
                       </div>
@@ -203,20 +215,20 @@ export default function ListsPage() {
 
             {/* ── Custom lists ── */}
             <section>
-              <h2 className="text-[13px] font-medium uppercase tracking-[0.08em] text-foreground/40 mb-4">
+              <h2 className="text-sm font-semibold text-foreground/80 mb-4">
                 Custom Lists
               </h2>
 
               {customLists.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-brand-purple/20 bg-card py-14 text-center">
-                  <p className="text-[13px] text-foreground/40 mb-4">
+                  <p className="text-[13px] text-foreground/60 mb-4">
                     No custom lists yet. Create one to get started.
                   </p>
                   <button
                     onClick={() => setShowCreateDialog(true)}
-                    className="inline-flex items-center gap-2 text-[12px] text-brand-purple hover:text-foreground transition-colors"
+                    className="inline-flex items-center gap-2 text-[12px] text-brand-purple hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Plus className="h-3.5 w-3.5" />
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     Create a list
                   </button>
                 </div>
@@ -225,13 +237,13 @@ export default function ListsPage() {
                   {customLists.map((list) => (
                     <div
                       key={list.id}
-                      className="bg-card border border-brand-purple/15 hover:border-brand-purple/30 rounded-lg p-4 flex flex-col gap-3 transition-colors"
+                      className="bg-card border border-brand-purple/15 hover:border-brand-purple/30 rounded-lg p-4 flex flex-col gap-3 transition-colors motion-reduce:transition-none"
                     >
                       {/* Title + visibility */}
                       <div className="flex items-start justify-between gap-2">
                         <Link
                           href={`/lists/${list.id}`}
-                          className="text-[15px] font-medium text-foreground hover:text-brand-purple transition-colors leading-snug line-clamp-1"
+                          className="text-[15px] font-medium text-foreground hover:text-brand-purple transition-colors motion-reduce:transition-none leading-snug line-clamp-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           {list.name}
                         </Link>
@@ -240,29 +252,29 @@ export default function ListsPage() {
 
                       {/* Description */}
                       {list.description && (
-                        <p className="text-[12px] text-foreground/40 leading-relaxed line-clamp-2">
+                        <p className="text-[12px] text-foreground/60 leading-relaxed line-clamp-2">
                           {list.description}
                         </p>
                       )}
 
                       {/* Footer: count + actions */}
                       <div className="flex items-center justify-between mt-auto pt-1">
-                        <span className="text-[12px] text-foreground/35">
+                        <span className="text-[12px] text-foreground/60">
                           {list._count?.items ?? 0} games
                         </span>
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/lists/${list.id}`}
-                            className="text-[12px] text-foreground/50 hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-brand-purple/10"
+                            className="text-[12px] text-foreground/60 hover:text-foreground transition-colors motion-reduce:transition-none px-2 py-1 rounded hover:bg-brand-purple/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             View
                           </Link>
                           <button
-                            onClick={() => handleDeleteList(list.id)}
-                            className="p-1.5 rounded text-foreground/30 hover:text-brand-red hover:bg-brand-red/5 transition-colors"
+                            onClick={() => setPendingDeleteId(list.id)}
+                            className="p-1.5 rounded text-foreground/40 hover:text-brand-red hover:bg-brand-red/5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             aria-label="Delete list"
                           >
-                            <Trash2 className="h-3.5 w-3.5" />
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                           </button>
                         </div>
                       </div>
@@ -279,6 +291,26 @@ export default function ListsPage() {
           onOpenChange={setShowCreateDialog}
           onSubmit={handleCreateList}
         />
+
+        <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this list?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This can&apos;t be undone. The list and its game entries will be permanently removed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => pendingDeleteId && handleDeleteList(pendingDeleteId)}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

@@ -51,7 +51,7 @@ export function ListItemRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-card rounded-lg border p-4 transition-colors ${
+      className={`bg-card rounded-lg border p-4 transition-colors motion-reduce:transition-none ${
         isAt100 ? "border-brand-teal/30" : "border-brand-purple/15 hover:border-brand-purple/25"
       }`}
     >
@@ -61,10 +61,10 @@ export function ListItemRow({
             type="button"
             {...attributes}
             {...listeners}
-            className="mt-1 text-foreground/20 hover:text-foreground/50 cursor-grab active:cursor-grabbing shrink-0"
+            className="mt-1 text-foreground/40 hover:text-foreground/70 cursor-grab active:cursor-grabbing shrink-0 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             aria-label="Drag to reorder"
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-4 w-4" aria-hidden="true" />
           </button>
         )}
 
@@ -72,7 +72,7 @@ export function ListItemRow({
           {item.game?.coverImage ? (
             <Image src={item.game.coverImage} alt={item.game.title ?? ""} fill className="object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-[10px] text-foreground/20">
+            <div className="w-full h-full flex items-center justify-center text-[10px] text-foreground/60">
               No art
             </div>
           )}
@@ -83,22 +83,22 @@ export function ListItemRow({
             <div className="min-w-0">
               <Link
                 href={`/games/${item.game?.slug}`}
-                className="text-[14px] font-medium text-foreground hover:text-brand-purple transition-colors line-clamp-1"
+                className="text-[14px] font-medium text-foreground hover:text-brand-purple transition-colors motion-reduce:transition-none line-clamp-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {item.game?.title}
               </Link>
               {item.notes && (
-                <p className="text-[12px] text-foreground/40 mt-0.5 line-clamp-2">{item.notes}</p>
+                <p className="text-[12px] text-foreground/60 mt-0.5 line-clamp-2">{item.notes}</p>
               )}
             </div>
 
             {isOwner && (
               <button
-                className="p-1.5 shrink-0 text-foreground/25 hover:text-brand-red hover:bg-brand-red/5 rounded transition-colors"
+                className="p-1.5 shrink-0 text-foreground/40 hover:text-brand-red hover:bg-brand-red/5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => onRemove(item.gameId)}
                 aria-label="Remove game"
               >
-                <Trash2 className="h-3.5 w-3.5" />
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -107,7 +107,7 @@ export function ListItemRow({
             <div className="mt-3 space-y-1.5">
               <ProgressBar value={item.progressPct} editable={isOwner} onClick={onProgressEditClick} />
               {item.progressNote && (
-                <p className="text-[12px] text-foreground/35 italic">{item.progressNote}</p>
+                <p className="text-[12px] text-foreground/60 italic">{item.progressNote}</p>
               )}
 
               <AchievementBadge
@@ -119,15 +119,15 @@ export function ListItemRow({
 
               {isAt100 && (
                 <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-brand-teal/10 border border-brand-teal/20 rounded-lg text-[12px] text-brand-teal">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span className="flex-1">
                     You&apos;re at 100% — ready to mark this complete?
                   </span>
                   <button
                     onClick={onCompleteClick}
-                    className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors"
+                    className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded border border-brand-teal/30 hover:bg-brand-teal/20 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <Trophy className="h-3 w-3" />
+                    <Trophy className="h-3 w-3" aria-hidden="true" />
                     Complete
                   </button>
                 </div>

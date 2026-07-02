@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +19,34 @@ import { toast } from "sonner";
 interface SteamLibraryCardProps {
   entry: SteamLibraryEntry;
   view?: "grid" | "list";
+}
+
+export function SteamLibraryCardSkeleton({ view = "grid" }: { view?: "grid" | "list" }) {
+  if (view === "list") {
+    return (
+      <Card className="overflow-hidden shadow-none border-brand-purple/20">
+        <CardContent className="p-0">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-muted animate-pulse motion-reduce:animate-none" />
+            <div className="flex-1 min-w-0 py-3 space-y-2">
+              <div className="h-4 w-2/3 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+              <div className="h-3 w-1/3 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="h-full overflow-hidden shadow-none border-brand-purple/20">
+      <div className="aspect-[460/215] bg-muted animate-pulse motion-reduce:animate-none" />
+      <CardContent className="p-3 space-y-2">
+        <div className="h-4 w-4/5 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+        <div className="h-3 w-1/3 rounded bg-muted animate-pulse motion-reduce:animate-none" />
+      </CardContent>
+    </Card>
+  );
 }
 
 export function SteamLibraryCard({ entry, view = "grid" }: SteamLibraryCardProps) {
@@ -112,14 +139,14 @@ function GridCard({
   const { handleClick, isLoading } = useGameGaugeNav(entry, isMatched, onLinked);
 
   return (
-    <Card className="group h-full overflow-hidden transition-all hover:shadow-lg bg-card">
+    <Card className="group h-full overflow-hidden shadow-none border-brand-purple/20 hover:border-brand-purple/50 transition-colors motion-reduce:transition-none bg-card">
       {/* Image + Overlay */}
       <div className="relative aspect-[460/215] overflow-hidden bg-muted">
         <Image
           src={coverImage || steamImage}
           alt={entry.name}
           fill
-          className="object-cover transition-transform group-hover:scale-105"
+          className="object-cover transition-transform group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -136,7 +163,7 @@ function GridCard({
               variant="secondary"
               className="bg-black/70 text-white border-0 backdrop-blur-sm"
             >
-              <Clock className="mr-1 h-3 w-3" />
+              <Clock className="mr-1 h-3 w-3" aria-hidden="true" />
               {formatPlaytimeCompact(entry.playtimeForever)}
             </Badge>
           </div>
@@ -145,23 +172,23 @@ function GridCard({
         {/* Recent playtime badge */}
         {entry.playtimeRecent > 0 && (
           <div className="absolute top-2 right-2 z-10">
-            <Badge className="bg-green-500/90 text-white border-0">
+            <Badge className="bg-brand-teal/90 text-white border-0">
               {formatPlaytimeCompact(entry.playtimeRecent)} recent
             </Badge>
           </div>
         )}
 
-        {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3 z-20">
+        {/* Action overlay — always visible on touch devices; hover-gated only where hover is actually available */}
+        <div className="absolute inset-0 bg-black/70 opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 motion-reduce:transition-none flex items-center justify-center gap-3 z-20">
           {/* Steam button */}
           <a
             href={getSteamStoreUrl(entry.steamAppId)}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#1b2838] text-white text-sm font-medium hover:bg-[#2a475e] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-[#1b2838] text-white text-sm font-medium hover:bg-[#2a475e] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <ExternalLink className="h-4 w-4" />
+            <ExternalLink className="h-4 w-4" aria-hidden="true" />
             Steam
           </a>
 
@@ -169,16 +196,16 @@ function GridCard({
           <button
             onClick={handleClick}
             disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-70"
+            className="flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors motion-reduce:transition-none disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Loading…
               </>
             ) : (
               <>
-                <Gamepad2 className="h-4 w-4" />
+                <Gamepad2 className="h-4 w-4" aria-hidden="true" />
                 Game Gauge
               </>
             )}
@@ -200,7 +227,7 @@ function GridCard({
               variant="secondary"
               className="text-xs bg-primary/10 text-primary border-0"
             >
-              <Link2 className="mr-1 h-3 w-3" />
+              <Link2 className="mr-1 h-3 w-3" aria-hidden="true" />
               Linked
             </Badge>
           )}
@@ -226,7 +253,7 @@ function ListCard({
   const { handleClick, isLoading } = useGameGaugeNav(entry, isMatched, onLinked);
 
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-md">
+    <Card className="group overflow-hidden shadow-none border-brand-purple/20 hover:border-brand-purple/50 transition-colors motion-reduce:transition-none">
       <CardContent className="p-0">
         <div className="flex items-center gap-4">
           {/* Thumbnail */}
@@ -248,16 +275,16 @@ function ListCard({
 
           {/* Info */}
           <div className="flex-1 min-w-0 py-3">
-            <h3 className="font-semibold text-sm md:text-base truncate group-hover:text-primary transition-colors">
+            <h3 className="font-semibold text-sm md:text-base truncate group-hover:text-primary transition-colors motion-reduce:transition-none">
               {entry.name}
             </h3>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-xs text-muted-foreground flex items-center">
-                <Clock className="mr-1 h-3 w-3" />
+                <Clock className="mr-1 h-3 w-3" aria-hidden="true" />
                 {formatPlaytime(entry.playtimeForever)}
               </span>
               {entry.playtimeRecent > 0 && (
-                <Badge variant="outline" className="text-xs text-green-600 border-green-600/30">
+                <Badge variant="outline" className="text-xs text-brand-teal border-brand-teal/30">
                   {formatPlaytimeCompact(entry.playtimeRecent)} recent
                 </Badge>
               )}
@@ -269,16 +296,16 @@ function ListCard({
             <button
               onClick={handleClick}
               disabled={isLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-70"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors motion-reduce:transition-none disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
                   Loading…
                 </>
               ) : (
                 <>
-                  <Gamepad2 className="h-3 w-3" />
+                  <Gamepad2 className="h-3 w-3" aria-hidden="true" />
                   Game Gauge
                 </>
               )}
@@ -287,9 +314,9 @@ function ListCard({
               href={getSteamStoreUrl(entry.steamAppId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1b2838] text-white text-xs font-medium hover:bg-[#2a475e] transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1b2838] text-white text-xs font-medium hover:bg-[#2a475e] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3" aria-hidden="true" />
               Steam
             </a>
           </div>

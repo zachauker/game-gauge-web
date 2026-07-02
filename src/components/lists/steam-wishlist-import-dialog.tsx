@@ -161,13 +161,13 @@ export function SteamWishlistImportDialog({
                 <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12 gap-3 text-muted-foreground">
-                            <Loader2 className="h-8 w-8 animate-spin"/>
+                            <Loader2 className="h-8 w-8 animate-spin" aria-hidden="true"/>
                             <span className="text-sm">Fetching your Steam wishlist…</span>
                         </div>
                     ) : error ? (
                         <div
                             className="flex items-start gap-3 bg-destructive/10 text-destructive p-4 rounded-lg text-sm">
-                            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0"/>
+                            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true"/>
                             <div>
                                 <p className="font-medium">Couldn't load wishlist</p>
                                 <p className="mt-0.5 opacity-80">{error}</p>
@@ -193,13 +193,13 @@ export function SteamWishlistImportDialog({
                                 <section>
                                     <div className="flex items-center justify-between mb-2">
                                         <h3 className="text-sm font-semibold flex items-center gap-2">
-                                            <Check className="h-4 w-4 text-green-500"/>
+                                            <Check className="h-4 w-4 text-brand-teal" aria-hidden="true"/>
                                             In Game Gauge
                                             <Badge variant="secondary">{matchedItems.length}</Badge>
                                         </h3>
                                         <button
                                             onClick={toggleAll}
-                                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                            className="text-xs text-muted-foreground hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         >
                                             {selected.size === matchedItems.length ? "Deselect all" : "Select all"}
                                         </button>
@@ -211,7 +211,7 @@ export function SteamWishlistImportDialog({
                                                 <li key={item.steamAppId}>
                                                     <label
                                                         className={cn(
-                                                            "flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-all",
+                                                            "flex items-center gap-3 px-3 py-2.5 rounded-lg border cursor-pointer transition-colors motion-reduce:transition-none has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
                                                             "hover:border-primary/40 hover:bg-accent",
                                                             isSelected ? "border-primary/50 bg-primary/5" : "border-border"
                                                         )}
@@ -258,7 +258,7 @@ export function SteamWishlistImportDialog({
                                                 key={item.steamAppId}
                                                 className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/50 opacity-60"
                                             >
-                                                <Check className="h-4 w-4 text-green-500 shrink-0"/>
+                                                <Check className="h-4 w-4 text-brand-teal shrink-0" aria-hidden="true"/>
                                                 <span className="text-sm truncate">{item.name}</span>
                                             </li>
                                         ))}
@@ -286,11 +286,11 @@ export function SteamWishlistImportDialog({
                                                     href={item.storeUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                                                    className="shrink-0 text-muted-foreground hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                                     title="View on Steam"
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
-                                                    <ExternalLink className="h-3.5 w-3.5"/>
+                                                    <ExternalLink className="h-3.5 w-3.5" aria-hidden="true"/>
                                                 </a>
                                             </li>
                                         ))}
@@ -318,14 +318,14 @@ export function SteamWishlistImportDialog({
                     >
                         {isImporting ? (
                             <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin"/>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true"/>
                                 {importProgress
                                     ? `${importProgress.done} / ${importProgress.total}`
                                     : "Importing…"}
                             </>
                         ) : (
                             <>
-                                <Download className="mr-2 h-4 w-4"/>
+                                <Download className="mr-2 h-4 w-4" aria-hidden="true"/>
                                 Import {selected.size > 0 ? `${selected.size} ` : ""}
                                 {selected.size === 1 ? "game" : "games"}
                             </>

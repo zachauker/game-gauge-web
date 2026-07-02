@@ -1,5 +1,6 @@
 'use client';
 
+import { Star, TrendingUp, Sparkles } from 'lucide-react';
 import { DBGame } from '@/lib/search';
 import { IGDBGame } from '@/lib/api';
 import { GameGrid } from './GameGrid';
@@ -16,23 +17,24 @@ interface CuratedRowsProps {
 }
 
 function SectionHeader({
-  emoji,
+  icon: Icon,
   title,
   onSeeAll,
 }: {
-  emoji: string;
+  icon: typeof Star;
   title: string;
   onSeeAll: () => void;
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xs font-medium text-white/45 uppercase tracking-[0.08em]">
-        {emoji} {title}
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground/80">
+        <Icon className="h-4 w-4 text-brand-purple/70" aria-hidden="true" />
+        {title}
       </h2>
       <button
         type="button"
         onClick={onSeeAll}
-        className="text-xs text-brand-purple/60 hover:text-brand-purple transition-colors"
+        className="text-xs text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         See all →
       </button>
@@ -54,7 +56,7 @@ export function CuratedRows({
       {/* Top Rated */}
       <section>
         <SectionHeader
-          emoji="⭐"
+          icon={Star}
           title="Top Rated on Game Gauge"
           onSeeAll={onSeeAllTopRated}
         />
@@ -68,7 +70,7 @@ export function CuratedRows({
       {/* Trending */}
       <section>
         <SectionHeader
-          emoji="🔥"
+          icon={TrendingUp}
           title="Trending This Week"
           onSeeAll={onSeeAllTrending}
         />
@@ -82,7 +84,7 @@ export function CuratedRows({
       {/* New Releases */}
       <section>
         <SectionHeader
-          emoji="🆕"
+          icon={Sparkles}
           title="New Releases"
           onSeeAll={onSeeAllNew}
         />

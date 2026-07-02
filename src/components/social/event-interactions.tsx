@@ -5,6 +5,16 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Heart, MessageCircle, Send, Trash2, Loader2 } from "lucide-react";
 import {
   EventComment,
@@ -47,6 +57,7 @@ export function EventInteractions({
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Load comments when thread opens for the first time
@@ -119,6 +130,8 @@ export function EventInteractions({
       setCommentCount(result.commentCount);
     } catch (err) {
       toast.error(getErrorMessage(err));
+    } finally {
+      setPendingDeleteId(null);
     }
   };
 
@@ -140,15 +153,17 @@ export function EventInteractions({
           onClick={handleLike}
           disabled={!isAuthenticated || likeLoading}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors",
+            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors motion-reduce:transition-none",
             "hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             hasLiked
-              ? "text-red-500 hover:text-red-600"
+              ? "text-brand-pink hover:text-brand-pink/80"
               : "text-muted-foreground hover:text-foreground"
           )}
           title={isAuthenticated ? (hasLiked ? "Unlike" : "Like") : "Sign in to like"}
         >
           <Heart
+            aria-hidden="true"
             className={cn("h-3.5 w-3.5", hasLiked && "fill-current")}
           />
           {likeCount > 0 && <span>{likeCount}</span>}
@@ -157,13 +172,15 @@ export function EventInteractions({
         {/* Comment toggle */}
         <button
           onClick={() => setShowComments((s) => !s)}
+          aria-expanded={showComments}
           className={cn(
-            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors",
+            "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors motion-reduce:transition-none",
             "hover:bg-accent text-muted-foreground hover:text-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             showComments && "text-primary"
           )}
         >
-          <MessageCircle className="h-3.5 w-3.5" />
+          <MessageCircle className="h-3.5 w-3.5" aria-hidden="true" />
           {commentCount > 0 ? (
             <span>{commentCount} {commentCount === 1 ? "comment" : "comments"}</span>
           ) : (
@@ -177,14 +194,14 @@ export function EventInteractions({
         <div className="mt-2 space-y-3 pl-2 border-l-2 border-border">
           {commentsLoading ? (
             <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground">
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
               Loading comments…
             </div>
           ) : (
             <>
               {comments.map((comment) => (
                 <div key={comment.id} className="flex gap-2 group">
-                  <Link href={`/users/${comment.user.username}`} className="shrink-0 mt-0.5">
+                  <Link href={`/users/${comment.user.username}`} className="shrink-0 mt-0.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <Avatar className="h-6 w-6">
                       {comment.user.avatar && (
                         <AvatarImage src={comment.user.avatar} alt={comment.user.username} />
@@ -198,7 +215,7 @@ export function EventInteractions({
                     <div className="flex items-baseline gap-1.5 flex-wrap">
                       <Link
                         href={`/users/${comment.user.username}`}
-                        className="text-xs font-semibold hover:text-primary transition-colors"
+                        className="text-xs font-semibold hover:text-primary transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         {comment.user.username}
                       </Link>
@@ -212,11 +229,12 @@ export function EventInteractions({
                   </div>
                   {user?.id === comment.user.id && (
                     <button
-                      onClick={() => handleDeleteComment(comment.id)}
-                      className="opacity-0 group-hover:opacity-100 shrink-0 p-1 rounded text-muted-foreground hover:text-destructive transition-all"
+                      onClick={() => setPendingDeleteId(comment.id)}
+                      className="opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 group-focus-within:opacity-100 shrink-0 p-1 rounded text-muted-foreground hover:text-destructive transition-opacity motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label="Delete comment"
                       title="Delete comment"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Trash2 className="h-3 w-3" aria-hidden="true" />
                     </button>
                   )}
                 </div>
@@ -256,9 +274,9 @@ export function EventInteractions({
                   disabled={!newComment.trim() || submitting}
                 >
                   {submitting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                   ) : (
-                    <Send className="h-3.5 w-3.5" />
+                    <Send className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
                 </Button>
               </div>
@@ -266,6 +284,29 @@ export function EventInteractions({
           )}
         </div>
       )}
+
+      <AlertDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => { if (!open) setPendingDeleteId(null); }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this comment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This can&apos;t be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => pendingDeleteId && void handleDeleteComment(pendingDeleteId)}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -13,7 +13,7 @@ interface ConversationListProps {
 }
 
 export function ConversationList({ activeConversationId, onSelect }: ConversationListProps) {
-  const { conversations, loading, reload } = useConversations();
+  const { conversations, loading, error, reload } = useConversations();
   const [tab, setTab] = useState<"inbox" | "requests">("inbox");
   const [newConversationOpen, setNewConversationOpen] = useState(false);
 
@@ -23,13 +23,13 @@ export function ConversationList({ activeConversationId, onSelect }: Conversatio
         <div className="flex gap-1">
           <button
             onClick={() => setTab("inbox")}
-            className={`px-2.5 py-1 rounded-md text-sm transition-colors ${tab === "inbox" ? "bg-brand-purple/15 text-foreground" : "text-foreground/50 hover:text-foreground/80"}`}
+            className={`px-2.5 py-1 rounded-md text-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tab === "inbox" ? "bg-brand-purple/15 text-foreground" : "text-foreground/60 hover:text-foreground/80"}`}
           >
             Inbox
           </button>
           <button
             onClick={() => setTab("requests")}
-            className={`px-2.5 py-1 rounded-md text-sm transition-colors ${tab === "requests" ? "bg-brand-purple/15 text-foreground" : "text-foreground/50 hover:text-foreground/80"}`}
+            className={`px-2.5 py-1 rounded-md text-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tab === "requests" ? "bg-brand-purple/15 text-foreground" : "text-foreground/60 hover:text-foreground/80"}`}
           >
             Requests
           </button>
@@ -37,9 +37,9 @@ export function ConversationList({ activeConversationId, onSelect }: Conversatio
         <button
           onClick={() => setNewConversationOpen(true)}
           aria-label="New conversation"
-          className="p-1.5 rounded-md text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors"
+          className="p-1.5 rounded-md text-foreground/60 hover:text-foreground hover:bg-foreground/5 transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
 
@@ -49,8 +49,18 @@ export function ConversationList({ activeConversationId, onSelect }: Conversatio
             <div className="flex items-center justify-center py-12">
               <div className="h-6 w-6 rounded-full border-2 border-brand-purple/20 border-t-brand-purple animate-spin" />
             </div>
+          ) : error ? (
+            <div className="text-center py-12 px-4">
+              <p className="text-sm text-foreground/60 mb-2">Couldn&apos;t load conversations.</p>
+              <button
+                onClick={() => void reload()}
+                className="text-sm text-brand-purple hover:text-foreground/80 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                Try again
+              </button>
+            </div>
           ) : conversations.length === 0 ? (
-            <p className="text-sm text-foreground/40 text-center py-12 px-4">
+            <p className="text-sm text-foreground/60 text-center py-12 px-4">
               No conversations yet — start one with the + button above.
             </p>
           ) : (
