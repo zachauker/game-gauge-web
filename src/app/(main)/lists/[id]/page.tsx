@@ -45,6 +45,16 @@ import { ListToolbar } from "@/components/lists/list-toolbar";
 import { ShareToDialog } from "@/components/messages/share-to-dialog";
 import { ListItemRow } from "@/components/lists/list-item-row";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   sortListItems,
   filterListItems,
   reorderWithinVisible,
@@ -84,6 +94,8 @@ export default function ListDetailPage() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [syncingAchievementsFor, setSyncingAchievementsFor] = useState<string | null>(null);
   const [filters, setFilters] = useState<ListFilterState>(DEFAULT_LIST_FILTER_STATE);
+  const [confirmingDeleteList, setConfirmingDeleteList] = useState(false);
+  const [pendingRemoveGameId, setPendingRemoveGameId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -144,22 +156,24 @@ export default function ListDetailPage() {
   };
 
   const handleDeleteList = async () => {
-    if (!confirm("Are you sure you want to delete this list?")) return;
     try {
       await deleteList(listId);
       router.push("/lists");
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
+    } finally {
+      setConfirmingDeleteList(false);
     }
   };
 
   const handleRemoveGame = async (gameId: string) => {
-    if (!confirm("Remove this game from the list?")) return;
     try {
       await removeGameFromList(listId, gameId);
       await loadList();
     } catch (err) {
-      setError(getErrorMessage(err));
+      toast.error(getErrorMessage(err));
+    } finally {
+      setPendingRemoveGameId(null);
     }
   };
 
@@ -235,7 +249,7 @@ export default function ListDetailPage() {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="h-6 w-6 animate-spin text-foreground/30" />
+          <Loader2 className="h-6 w-6 animate-spin text-foreground/30" aria-hidden="true" />
         </div>
       </MainLayout>
     );
@@ -250,9 +264,9 @@ export default function ListDetailPage() {
           </div>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-1.5 text-[13px] text-foreground/40 hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-1.5 text-[13px] text-foreground/60 hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             Go back
           </button>
         </div>
@@ -267,9 +281,9 @@ export default function ListDetailPage() {
         {/* ── Back link ── */}
         <Link
           href="/lists"
-          className="inline-flex items-center gap-1 text-[12px] text-foreground/35 hover:text-foreground/70 mb-7 transition-colors"
+          className="inline-flex items-center gap-1 text-[12px] text-foreground/60 hover:text-foreground/80 mb-7 transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <ChevronLeft className="h-3.5 w-3.5" />
+          <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
           My Lists
         </Link>
 
@@ -281,25 +295,25 @@ export default function ListDetailPage() {
                 {list.name}
               </h1>
               {list.isDefault && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/15 text-foreground/40">
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-brand-purple/10 border border-brand-purple/15 text-foreground/60">
                   Default
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 text-[12px] text-foreground/40 flex-wrap">
+            <div className="flex items-center gap-3 text-[12px] text-foreground/60 flex-wrap">
               {list.isPublic ? (
                 <span className="inline-flex items-center gap-1 text-brand-teal">
-                  <Globe className="h-3 w-3" /> Public
+                  <Globe className="h-3 w-3" aria-hidden="true" /> Public
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1">
-                  <Lock className="h-3 w-3" /> Private
+                  <Lock className="h-3 w-3" aria-hidden="true" /> Private
                 </span>
               )}
               <span>{list.items?.length ?? 0} games</span>
             </div>
             {list.description && (
-              <p className="text-[13px] text-foreground/40 mt-2 leading-relaxed">
+              <p className="text-[13px] text-foreground/60 mt-2 leading-relaxed">
                 {list.description}
               </p>
             )}
@@ -308,17 +322,17 @@ export default function ListDetailPage() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowShareDialog(true)}
-              className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/40 hover:text-foreground transition-colors"
+              className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/60 hover:text-foreground transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label="Share this list"
             >
-              <Share2 className="h-4 w-4" />
+              <Share2 className="h-4 w-4" aria-hidden="true" />
             </button>
             {showSteamImportButton && (
               <button
                 onClick={() => setShowSteamImport(true)}
-                className="flex items-center gap-2 px-3 py-2 text-[12px] text-foreground/60 hover:text-foreground border border-brand-purple/20 hover:border-brand-purple/40 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-[12px] text-foreground/60 hover:text-foreground border border-brand-purple/20 hover:border-brand-purple/40 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden="true">
                   <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.455 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z" />
                 </svg>
                 Import Wishlist
@@ -328,26 +342,26 @@ export default function ListDetailPage() {
               <>
                 <button
                   onClick={() => setShowEditDialog(true)}
-                  className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/40 hover:text-foreground transition-colors"
+                  className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-purple/40 text-foreground/60 hover:text-foreground transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Edit list"
                 >
-                  <Edit className="h-4 w-4" />
+                  <Edit className="h-4 w-4" aria-hidden="true" />
                 </button>
                 <button
-                  onClick={handleDeleteList}
-                  className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-red/30 text-foreground/40 hover:text-brand-red transition-colors"
+                  onClick={() => setConfirmingDeleteList(true)}
+                  className="p-2 rounded-lg border border-brand-purple/20 hover:border-brand-red/30 text-foreground/60 hover:text-brand-red transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   aria-label="Delete list"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
               </>
             )}
             {isOwner && (
               <button
                 onClick={() => setShowAddGameDialog(true)}
-                className="flex items-center gap-2 bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 bg-brand-purple hover:bg-brand-purple/80 text-foreground text-[13px] font-medium px-4 py-2 rounded-lg transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 Add Game
               </button>
             )}
@@ -364,16 +378,16 @@ export default function ListDetailPage() {
         {/* ── Empty state ── */}
         {(!list.items || list.items.length === 0) && (
           <div className="rounded-lg border border-dashed border-brand-purple/20 bg-card py-16 text-center">
-            <Search className="mx-auto h-8 w-8 text-foreground/20 mb-3" />
-            <p className="text-[13px] text-foreground/40 mb-4">
+            <Search className="mx-auto h-8 w-8 text-foreground/30" aria-hidden="true" />
+            <p className="text-[13px] text-foreground/60 mb-4">
               {isOwner ? "Add your first game to get started" : "This list has no games yet"}
             </p>
             {isOwner && (
               <button
                 onClick={() => setShowAddGameDialog(true)}
-                className="inline-flex items-center gap-1.5 text-[12px] text-brand-purple hover:text-foreground transition-colors"
+                className="inline-flex items-center gap-1.5 text-[12px] text-brand-purple hover:text-foreground transition-colors motion-reduce:transition-none rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                 Add a game
               </button>
             )}
@@ -403,8 +417,8 @@ export default function ListDetailPage() {
         {/* ── No results from filters ── */}
         {list.items && list.items.length > 0 && visibleItems.length === 0 && (
           <div className="rounded-lg border border-dashed border-brand-purple/20 bg-card py-14 text-center">
-            <Search className="mx-auto h-8 w-8 text-foreground/20 mb-3" />
-            <p className="text-[13px] text-foreground/40">No games match your search/filters.</p>
+            <Search className="mx-auto h-8 w-8 text-foreground/30 mb-3" aria-hidden="true" />
+            <p className="text-[13px] text-foreground/60">No games match your search/filters.</p>
           </div>
         )}
 
@@ -422,7 +436,7 @@ export default function ListDetailPage() {
                     dragEnabled={dragEnabled}
                     syncingAchievements={syncingAchievementsFor === item.gameId}
                     hasSteam={Boolean(user?.steamId)}
-                    onRemove={handleRemoveGame}
+                    onRemove={(gameId) => setPendingRemoveGameId(gameId)}
                     onProgressEditClick={() =>
                       setProgressEdit({
                         gameId: item.gameId,
@@ -486,6 +500,49 @@ export default function ListDetailPage() {
           open={showShareDialog}
           onOpenChange={setShowShareDialog}
         />
+
+        <AlertDialog open={confirmingDeleteList} onOpenChange={setConfirmingDeleteList}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this list?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This can&apos;t be undone. The list and its game entries will be permanently removed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => void handleDeleteList()}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={pendingRemoveGameId !== null}
+          onOpenChange={(open) => { if (!open) setPendingRemoveGameId(null); }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove this game from the list?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You can always add it back later.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => pendingRemoveGameId && void handleRemoveGame(pendingRemoveGameId)}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Remove
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

@@ -8,6 +8,7 @@
  */
 
 import { cn } from "@/lib/utils";
+import { Pencil } from "lucide-react";
 
 interface ProgressBarProps {
   /** 0–100 */
@@ -26,15 +27,8 @@ export function ProgressBar({
 }: ProgressBarProps) {
   const pct = value ?? 0;
 
-  // Colour shifts green as progress increases
-  const trackColor =
-    pct === 100
-      ? "bg-green-500"
-      : pct >= 75
-      ? "bg-emerald-500"
-      : pct >= 40
-      ? "bg-blue-500"
-      : "bg-primary";
+  // Track stays brand-purple in progress; shifts to brand-teal at full completion
+  const trackColor = pct === 100 ? "bg-brand-teal" : "bg-primary";
 
   return (
     <button
@@ -42,7 +36,7 @@ export function ProgressBar({
       onClick={editable ? onClick : undefined}
       disabled={!editable}
       className={cn(
-        "w-full text-left group",
+        "w-full text-left group rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         editable && "cursor-pointer",
         !editable && "cursor-default",
         className
@@ -56,16 +50,17 @@ export function ProgressBar({
         </span>
         <span
           className={cn(
-            "text-xs font-semibold tabular-nums",
-            pct === 100 ? "text-green-500" : "text-foreground",
-            editable && "group-hover:text-primary transition-colors"
+            "text-xs font-semibold tabular-nums flex items-center",
+            pct === 100 ? "text-brand-teal" : "text-foreground",
+            editable && "group-hover:text-primary transition-colors motion-reduce:transition-none"
           )}
         >
           {pct}%
           {editable && (
-            <span className="ml-1 opacity-0 group-hover:opacity-60 transition-opacity text-[10px]">
-              ✎
-            </span>
+            <Pencil
+              aria-hidden="true"
+              className="ml-1 h-2.5 w-2.5 opacity-0 group-hover:opacity-60 transition-opacity motion-reduce:transition-none"
+            />
           )}
         </span>
       </div>
@@ -74,7 +69,7 @@ export function ProgressBar({
       <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
         <div
           className={cn(
-            "h-full rounded-full transition-all duration-300",
+            "h-full rounded-full transition-all duration-300 motion-reduce:transition-none",
             trackColor,
             editable && "group-hover:opacity-80"
           )}

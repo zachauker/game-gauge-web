@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
+import { useCloseOnOutsideOrEscape } from '@/hooks/useCloseOnOutsideOrEscape';
 
 export type SortOption = 'top-rated' | 'trending' | 'release-date' | 'a-z';
 
@@ -33,30 +34,6 @@ interface FilterChipsProps {
   onGenreChange: (genre: string | null) => void;
   onPlatformChange: (platform: string | null) => void;
   onSortChange: (sort: SortOption) => void;
-}
-
-function useCloseOnOutsideOrEscape(open: boolean, setOpen: (open: boolean) => void) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, setOpen]);
-
-  return ref;
 }
 
 function ChipDropdown({

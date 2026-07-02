@@ -19,8 +19,8 @@ export default function MeRedirectPage() {
   }, [user, isAuthenticated, router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    <div role="status" aria-label="Loading" className="flex min-h-screen items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
     </div>
   );
 }

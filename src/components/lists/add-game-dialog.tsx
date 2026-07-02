@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -43,14 +43,24 @@ export function AddGameToListDialog({
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Search games when query changes
+  // Search games when query changes, debounced
   useEffect(() => {
-    if (searchQuery.trim().length >= 2) {
-      searchGames();
-    } else {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (searchQuery.trim().length < 2) {
       setGames([]);
+      return;
     }
+
+    debounceRef.current = setTimeout(() => {
+      searchGames();
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, [searchQuery]);
 
   const searchGames = async () => {

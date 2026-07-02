@@ -16,7 +16,7 @@ function StatPill({ value, label }: { value: string | number; label: string }) {
       <p className="text-[18px] font-medium text-foreground leading-tight tabular-nums">
         {value}
       </p>
-      <p className="text-[11px] text-foreground/35 uppercase tracking-[0.06em] mt-0.5">
+      <p className="text-[11px] text-foreground/60 uppercase tracking-[0.06em] mt-0.5">
         {label}
       </p>
     </div>
@@ -35,12 +35,12 @@ function LinkStatPill({
   return (
     <Link
       href={href}
-      className="text-center px-4 first:pl-0 last:pr-0 border-r border-brand-purple/15 last:border-0 hover:bg-brand-purple/5 rounded transition-colors"
+      className="text-center px-4 first:pl-0 last:pr-0 border-r border-brand-purple/15 last:border-0 hover:bg-brand-purple/5 rounded transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <p className="text-[18px] font-medium text-brand-purple/80 leading-tight tabular-nums">
         {value}
       </p>
-      <p className="text-[11px] text-foreground/35 uppercase tracking-[0.06em] mt-0.5">
+      <p className="text-[11px] text-foreground/60 uppercase tracking-[0.06em] mt-0.5">
         {label}
       </p>
     </Link>

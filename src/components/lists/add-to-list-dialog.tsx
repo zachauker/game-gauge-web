@@ -103,15 +103,16 @@ export function AddToListDialog({
               <DialogTitle className="text-[15px] font-medium text-foreground">
                 Add to list
               </DialogTitle>
-              <p className="text-[12px] text-foreground/40 mt-0.5 line-clamp-1">
+              <p className="text-[12px] text-foreground/60 mt-0.5 line-clamp-1">
                 {gameTitle}
               </p>
             </div>
             <button
               onClick={() => onOpenChange(false)}
-              className="text-foreground/30 hover:text-foreground/60 transition-colors mt-0.5"
+              aria-label="Close"
+              className="text-foreground/50 hover:text-foreground/80 transition-colors motion-reduce:transition-none mt-0.5 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         </DialogHeader>
@@ -120,12 +121,12 @@ export function AddToListDialog({
         <div className="px-5 py-4 max-h-72 overflow-y-auto space-y-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-foreground/30" />
+              <Loader2 className="h-5 w-5 animate-spin text-foreground/30" aria-hidden="true" />
             </div>
           ) : lists.length === 0 ? (
             <div className="py-8 text-center">
-              <List className="h-8 w-8 text-foreground/15 mx-auto mb-3" />
-              <p className="text-[12px] text-foreground/35">
+              <List className="h-8 w-8 text-foreground/30 mx-auto mb-3" aria-hidden="true" />
+              <p className="text-[12px] text-foreground/60">
                 You don't have any lists yet.
               </p>
             </div>
@@ -138,7 +139,7 @@ export function AddToListDialog({
                   key={list.id}
                   onClick={() => toggle(list.id)}
                   disabled={loading}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-all text-left ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg border transition-colors motion-reduce:transition-none text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
                     inList
                       ? "bg-brand-teal/10 border-brand-teal/25 hover:border-brand-teal/40"
                       : "bg-card border-brand-purple/15 hover:border-brand-purple/35"
@@ -149,18 +150,18 @@ export function AddToListDialog({
                       {list.name}
                     </p>
                     {list._count && (
-                      <p className="text-[11px] text-foreground/35 mt-0.5">
+                      <p className="text-[11px] text-foreground/60 mt-0.5">
                         {list._count.items} game{list._count.items !== 1 ? "s" : ""}
                       </p>
                     )}
                   </div>
                   <div className="shrink-0 ml-3">
                     {loading ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-foreground/30" />
+                      <Loader2 className="h-4 w-4 animate-spin text-foreground/30" aria-hidden="true" />
                     ) : inList ? (
-                      <Check className="h-4 w-4 text-brand-teal" />
+                      <Check className="h-4 w-4 text-brand-teal" aria-hidden="true" />
                     ) : (
-                      <Plus className="h-4 w-4 text-foreground/25" />
+                      <Plus className="h-4 w-4 text-foreground/40" aria-hidden="true" />
                     )}
                   </div>
                 </button>
@@ -173,7 +174,7 @@ export function AddToListDialog({
         <div className="border-t border-brand-purple/15 px-5 py-3">
           <button
             onClick={() => onOpenChange(false)}
-            className="w-full text-[13px] text-foreground/40 hover:text-foreground/70 transition-colors text-center"
+            className="w-full text-[13px] text-foreground/60 hover:text-foreground/80 transition-colors motion-reduce:transition-none text-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             Done
           </button>
